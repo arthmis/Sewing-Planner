@@ -2,20 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UILaunchStoryboardName</key>
+	<string>Launch Screen</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>SourceSans3-Regular.ttf</string>
 		<string>SourceSans3-Bold.ttf</string>
 	</array>
-	<key>UILaunchScreen</key>
-	<dict>
-		<key>UILaunchScreen</key>
-		<dict/>
-		<key>UIToolbar</key>
-		<dict>
-			<key>UIImageName</key>
-			<string></string>
-		</dict>
-	</dict>
 </dict>
 </plist>

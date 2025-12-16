@@ -14,6 +14,8 @@
 		6E572DCB2C49E03F008BCF24 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 6E572DCA2C49E03F008BCF24 /* GRDB */; };
 		6E572DD32C5DB2A0008BCF24 /* NewProjectViewTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E572DD22C5DB2A0008BCF24 /* NewProjectViewTest.swift */; };
 		6E9724562C90EAFF0027C487 /* TimestampedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E9724552C90EAFF0027C487 /* TimestampedRecord.swift */; };
+		6EDF25212EEF3A8200572982 /* sewing-planner-flat.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6EDF25202EEF3A8200572982 /* sewing-planner-flat.icon */; };
+		6EDF25232EEF412F00572982 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6EDF25222EEF412F00572982 /* Launch Screen.storyboard */; };
 		6EF0C8412BED3CE400E7576F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6EF0C8402BED3CE400E7576F /* Assets.xcassets */; };
 		6EF0C8442BED3CE400E7576F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6EF0C8432BED3CE400E7576F /* Preview Assets.xcassets */; };
 		6EF0C8592BED3CE400E7576F /* Sewing_PlannerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EF0C8582BED3CE400E7576F /* Sewing_PlannerUITests.swift */; };
@@ -74,6 +76,8 @@
 		6E9724552C90EAFF0027C487 /* TimestampedRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampedRecord.swift; sourceTree = "<group>"; };
 		6E9725102CC6EA4B0027C487 /* Sewing-Planner-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Sewing-Planner-Info.plist"; sourceTree = SOURCE_ROOT; };
 		6EBA5ECE2E83212D00DFCD3E /* Sewing Planner.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Sewing Planner.xctestplan"; sourceTree = "<group>"; };
+		6EDF25202EEF3A8200572982 /* sewing-planner-flat.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "sewing-planner-flat.icon"; sourceTree = "<group>"; };
+		6EDF25222EEF412F00572982 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		6EF0C8392BED3CE200E7576F /* Sewing Planner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sewing Planner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6EF0C8402BED3CE400E7576F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6EF0C8432BED3CE400E7576F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -170,6 +174,7 @@
 				6E49141B2EB2A0B30077C63D /* Sewing PlannerUnitTests */,
 				6E490FB92EAD46130077C63D /* Frameworks */,
 				6EF0C83A2BED3CE200E7576F /* Products */,
+				6EDF25202EEF3A8200572982 /* sewing-planner-flat.icon */,
 			);
 			sourceTree = "<group>";
 		};
@@ -195,6 +200,7 @@
 				6EF0C8452BED3CE400E7576F /* Sewing_Planner.entitlements */,
 				6EF0C8422BED3CE400E7576F /* Preview Content */,
 				6E9724552C90EAFF0027C487 /* TimestampedRecord.swift */,
+				6EDF25222EEF412F00572982 /* Launch Screen.storyboard */,
 			);
 			path = "Sewing Planner";
 			sourceTree = "<group>";
@@ -394,6 +400,8 @@
 			files = (
 				6EF0C8442BED3CE400E7576F /* Preview Assets.xcassets in Resources */,
 				6EF0C8412BED3CE400E7576F /* Assets.xcassets in Resources */,
+				6EDF25232EEF412F00572982 /* Launch Screen.storyboard in Resources */,
+				6EDF25212EEF3A8200572982 /* sewing-planner-flat.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -714,8 +722,9 @@
 		6EF0C85F2BED3CE400E7576F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "sewing-planner-flat";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "Sewing Planner/Sewing PlannerDebug.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
@@ -754,8 +763,9 @@
 		6EF0C8602BED3CE400E7576F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "sewing-planner-flat";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = "Sewing Planner/Sewing_Planner.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
