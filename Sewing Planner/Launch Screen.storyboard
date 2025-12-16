@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24128" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
-    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
-        <array key="SourceSans3-Bold.ttf">
-            <string>SourceSans3-Bold</string>
+        <array key="SourceSans3-VariableFont_wght.ttf">
+            <string>SourceSans3-Roman_ExtraBold</string>
         </array>
     </customFonts>
     <scenes>
@@ -16,23 +16,22 @@
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    <view key="view" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <stackView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" axis="vertical" spacing="32" translatesAutoresizingMaskIntoConstraints="NO" id="3p4-gH-dlA">
-                                <rect key="frame" x="76" y="178" width="240" height="205.66666666666663"/>
+                                <rect key="frame" x="0.0" y="80" width="375" height="206"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="sewing-borderless" translatesAutoresizingMaskIntoConstraints="NO" id="BkN-qe-Xgo">
-                                        <rect key="frame" x="0.0" y="0.0" width="240" height="128"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="375" height="128"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="240" id="gSP-G7-JsT"/>
                                             <constraint firstAttribute="height" constant="128" id="riB-An-bg2"/>
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sewing Planner" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gKx-6D-Mir">
-                                        <rect key="frame" x="0.0" y="160" width="240" height="45.666666666666657"/>
-                                        <fontDescription key="fontDescription" name="SourceSans3-Bold" family="Source Sans 3" pointSize="32"/>
+                                        <rect key="frame" x="0.0" y="160" width="375" height="46"/>
+                                        <fontDescription key="fontDescription" name="SourceSans3-Roman_ExtraBold" family="Source Sans 3" pointSize="32"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
@@ -46,9 +45,9 @@
                             <accessibilityTraits key="traits" notEnabled="YES"/>
                         </accessibility>
                         <constraints>
-                            <constraint firstItem="3p4-gH-dlA" firstAttribute="leading" secondItem="HfJ-oj-k3z" secondAttribute="leading" constant="76" id="E6L-c7-Ukr"/>
+                            <constraint firstItem="HfJ-oj-k3z" firstAttribute="trailing" secondItem="3p4-gH-dlA" secondAttribute="trailing" id="5PS-yH-ggE"/>
+                            <constraint firstItem="3p4-gH-dlA" firstAttribute="leading" secondItem="HfJ-oj-k3z" secondAttribute="leading" id="E6L-c7-Ukr"/>
                             <constraint firstItem="3p4-gH-dlA" firstAttribute="top" secondItem="HfJ-oj-k3z" secondAttribute="top" constant="60" id="GBZ-LH-NNK"/>
-                            <constraint firstItem="HfJ-oj-k3z" firstAttribute="trailing" secondItem="3p4-gH-dlA" secondAttribute="trailing" constant="77" id="aCr-3j-KQo"/>
                         </constraints>
                     </view>
                 </viewController>
