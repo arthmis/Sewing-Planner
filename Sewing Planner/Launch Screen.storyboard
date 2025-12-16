@@ -50,6 +50,8 @@
                             <constraint firstItem="3p4-gH-dlA" firstAttribute="top" secondItem="HfJ-oj-k3z" secondAttribute="top" constant="60" id="GBZ-LH-NNK"/>
                         </constraints>
                     </view>
+                    <toolbarItems/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
