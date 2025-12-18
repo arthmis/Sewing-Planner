@@ -116,3 +116,10 @@ to each database schema update.
 - https://www.objc.io/blog/2021/08/24/conditional-view-modifiers/
 - cause bad animatinos and potentially wonky behaviors because swift treats the two returned views as entirely different views and is unable to understand that they represent the same thing
 - also causes state to be lost because the separate branch is treated as a new view
+
+## share extensions for ios App
+- it seems that when running a share extension and you select an app to open:
+  - if you run a different app without closing the current host app for the extension then the 2nd app you run will not display your ios app as a choice for sharing
+  - you must first close the original app opened by running the share extension
+  - for example if you run the extension and open safari, subsequent runs where you choose safari and didn't stop the run with the stop button you will continue to see your app as a choice amongst the selection
+  - another example, if you run safari for the extension, you don't hit stop, you run a different app, like photos, the photos app will not show your app as a choice until you stop the original safari invocation and any subsequent ones
