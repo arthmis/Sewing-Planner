@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ReceiveImageView: View {
   // let image: UIImage
-  let image: Data
+  let image: Data?
   let dismiss: () -> Void
   @State var projects: [SharedProject] = []
   @State var selection: Int64 = 0
@@ -38,10 +38,14 @@ struct ReceiveImageView: View {
         Text(
           "Please create one project in the main app before trying to share."
         )
-        if let sharedImage = UIImage(data: image) {
-          Image(uiImage: sharedImage)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+        if let image = image {
+          if let sharedImage = UIImage(data: image) {
+            Image(uiImage: sharedImage)
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+          } else {
+            Text("Couldn't load image")
+          }
         } else {
           Text("Couldn't load image")
         }
@@ -53,10 +57,15 @@ struct ReceiveImageView: View {
           }
         }
         .pickerStyle(.menu)
-        if let sharedImage = UIImage(data: image) {
-          Image(uiImage: sharedImage)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+
+        if let image = image {
+          if let sharedImage = UIImage(data: image) {
+            Image(uiImage: sharedImage)
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+          } else {
+            Text("Couldn't load image")
+          }
         } else {
           Text("Couldn't load image")
         }
@@ -122,12 +131,16 @@ func getProjects() throws -> [SharedProject] {
 
 let sharedImagesFileName = "sharedImages"
 
-func saveImageForProject(projectId: Int64, image: Data) throws {
+func saveImageForProject(projectId: Int64, image: Data?) throws {
   let fileIdentifier = UUID().uuidString
   let sharedImageIdentification = SharedImage(
     projectId: projectId,
     fileIdentifier: fileIdentifier
   )
+
+  guard let image = image else {
+    return
+  }
 
   try SharedPersistence().saveImage(
     fileIdentifier: sharedImageIdentification.fileIdentifier,

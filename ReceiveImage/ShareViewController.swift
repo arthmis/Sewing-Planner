@@ -27,15 +27,13 @@ class ShareViewController: UIViewController {
     // Check type identifier
     let imageDataType = UTType.image.identifier
     let urlDataType = UTType.url.identifier
-    let jpegDataType = UTType.jpeg.identifier
-    let pngDataType = UTType.png.identifier
     print(itemProvider.registeredTypeIdentifiers())
     if itemProvider.hasItemConformingToTypeIdentifier(imageDataType) {
       itemProvider.loadItem(forTypeIdentifier: imageDataType, options: nil) {
         providedItem,
         error in
         if let importError = error {
-          print("import error")
+          print("import error \(importError)")
           return
         }
 
@@ -49,13 +47,8 @@ class ShareViewController: UIViewController {
           imageData = image.pngData()
         }
 
-        if let data = imageData {
-          DispatchQueue.main.async {
-            self.displayView(data: data)
-          }
-        } else {
-          // TODO: show an error view that says couldn't load image
-          print("error reading image data")
+        DispatchQueue.main.async {
+          self.displayView(data: imageData)
         }
       }
     } else if itemProvider.hasItemConformingToTypeIdentifier(urlDataType) {
@@ -63,7 +56,7 @@ class ShareViewController: UIViewController {
         providedItem,
         error in
         if let importError = error {
-          print("import error")
+          print("import error \(importError.localizedDescription)")
           return
         }
 
@@ -101,7 +94,7 @@ class ShareViewController: UIViewController {
     }
   }
 
-  func displayView(data: Data) {
+  func displayView(data: Data?) {
     func dismissView() {
       self.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil)
     }
