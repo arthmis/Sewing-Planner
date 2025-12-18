@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ReceiveImageView: View {
-  // let image: UIImage
   let image: Data?
   let dismiss: () -> Void
   @State var projects: [SharedProject] = []
@@ -43,6 +42,7 @@ struct ReceiveImageView: View {
             Image(uiImage: sharedImage)
               .resizable()
               .aspectRatio(contentMode: .fit)
+              .padding(12)
           } else {
             Text("Couldn't load image")
           }
@@ -63,6 +63,7 @@ struct ReceiveImageView: View {
             Image(uiImage: sharedImage)
               .resizable()
               .aspectRatio(contentMode: .fit)
+              .padding(12)
           } else {
             Text("Couldn't load image")
           }
@@ -78,11 +79,12 @@ struct ReceiveImageView: View {
             )
             dismiss()
           } catch {
-            // TODO: handle error
+            // TODO: display error
             self.error = "Couldn't save image. Please try again."
             self.showError = true
           }
         }
+        .disabled(image == nil || hasNoProject)
       }
     }
     .alert(
@@ -97,14 +99,13 @@ struct ReceiveImageView: View {
     .padding(.horizontal, 10)
     .task {
       do {
-        let projects = try getProjects()
-        self.projects = projects
-        if let first = projects.first {
+        self.projects = try getProjects()
+        if let first = self.projects.first {
           selection = first.id
         }
       } catch {
-        // TODO: show some kind of error and offer retry or something
-        print(error.localizedDescription)
+        self.error = error.localizedDescription
+        self.showError = true
       }
     }
   }
@@ -113,11 +114,11 @@ struct ReceiveImageView: View {
 func getProjects() throws -> [SharedProject] {
   guard let data = try? SharedPersistence().getFile(fileName: "projects")
   else {
-    // throw an error
     throw ShareError.getFile(
       "Couldn't load projects. Head to the main app and create a project"
     )
   }
+
   let decoder = JSONDecoder()
   guard let projects = try? decoder.decode([SharedProject].self, from: data)
   else {
