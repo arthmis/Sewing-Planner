@@ -54,7 +54,6 @@ class ProjectImages {
   private func saveImages(images: [ProjectImageInput], db: AppDatabase) throws -> [ProjectImage] {
     var savedImages: [ProjectImage] = []
     try db.getWriter().write { db in
-      // TODO: convert this loop into a map call or consider it
       for image in images {
         do {
           if image.record == nil {
@@ -153,14 +152,16 @@ class ProjectImages {
       return image.record
     }
 
+    var sharedImages: [ProjectImage] = []
     do {
-      try loadSharedImages(db: db)
+      sharedImages = try loadSharedImages(db: db)
     } catch {
       print("failed to load shared image")
       // TODO: decide what I want to do here
     }
 
-    let images = db.getProjectThumbnails(projectId: projectId, records: records)
+    var images = db.getProjectThumbnails(projectId: projectId, records: records)
+    images.append(contentsOf: sharedImages)
 
     await MainActor.run {
       self.images = images
@@ -168,12 +169,12 @@ class ProjectImages {
 
   }
 
-  private func loadSharedImages(db: AppDatabase) throws {
+  private func loadSharedImages(db: AppDatabase) throws -> [ProjectImage] {
     let sharedImagesFileName = "sharedImages"
     let sharedPersistence = try SharedPersistence()
     guard let fileData = try sharedPersistence.getFile(fileName: sharedImagesFileName) else {
       // TODO: return or throw
-      return
+      return []
     }
     let decoder = JSONDecoder()
     guard let sharedImages = try? decoder.decode([SharedImage].self, from: fileData) else {
@@ -181,14 +182,18 @@ class ProjectImages {
     }
 
     if sharedImages.isEmpty {
-      return
+      return []
     }
 
+    var savedImages: [ProjectImage] = []
     for sharedImage in sharedImages {
       if sharedImage.projectId == projectId {
         let data = try sharedPersistence.getImage(withIdentifier: sharedImage.fileIdentifier)
+        // extension shouldn't have saved anything that wasn't an image so should be safe
+        // to unwrap this here
         let image = UIImage(data: data)!
-        _ = try saveImages(images: [ProjectImageInput(image: image)], db: db)
+        let savedImage = try saveImages(images: [ProjectImageInput(image: image)], db: db)
+        savedImages.append(contentsOf: savedImage)
         try sharedPersistence.deleteImage(withIdentifier: sharedImage.fileIdentifier)
       }
     }
@@ -197,6 +202,8 @@ class ProjectImages {
     let encoder = JSONEncoder()
     let data = try encoder.encode(updatedSharedImages)
     try sharedPersistence.writeFile(data: data, fileName: sharedImagesFileName)
+
+    return savedImages
   }
 }
 
