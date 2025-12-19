@@ -147,7 +147,7 @@ class ProjectImages {
 
   private func loadSharedImages(db: AppDatabase) throws {
     let sharedImagesFileName = "sharedImages"
-    let sharedPersistence = SharedPersistence()
+    let sharedPersistence = try SharedPersistence()
     guard let fileData = try sharedPersistence.getFile(fileName: sharedImagesFileName) else {
       // TODO: return or throw
       return

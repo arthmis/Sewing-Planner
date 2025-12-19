@@ -27,19 +27,29 @@ enum ShareError: Error {
 
 struct SharedPersistence {
   let fileManager: FileManager
+  let appGroup: String
+  var sharedLocation: URL
 
-  init(_ fileManager: FileManager? = nil) {
+  init(_ fileManager: FileManager? = nil, _ appGroup: String? = nil) throws {
     self.fileManager = fileManager ?? FileManager.default
-  }
+    self.appGroup = appGroup ?? "group.SewingPlanner"
+    // swift doesn't understand that sharedLocation will either be initialized or the function throws
+    // it requires that I initialize it first before I can use, somehow initializing it after getPersistenceLocation
+    // call doesn't count as initialization
+    // so I'm using a url that should be correct to initialize it first
+    self.sharedLocation = URL(string: "http://example.com")!
 
-  func getFile(fileName: String) throws -> Data? {
-    guard let sharedLocation = try getPersistenceLocation() else {
+    guard let appGroupLocation = try getPersistenceLocation(self.appGroup) else {
       throw ShareError.cannotFindAppGroupContainer(
         "Couldn't get the location of the shared container for the app group"
       )
     }
+    self.sharedLocation = appGroupLocation
+  }
+
+  func getFile(fileName: String) throws -> Data? {
     let fileUrl = constructFileLocation(
-      location: sharedLocation,
+      location: self.sharedLocation,
       fileName: fileName
     )
     let data = self.fileManager.contents(atPath: fileUrl.path())
@@ -47,14 +57,8 @@ struct SharedPersistence {
   }
 
   func writeFile(data: Data, fileName: String) throws {
-    guard let sharedLocation = try getPersistenceLocation() else {
-      throw ShareError.cannotFindAppGroupContainer(
-        "Couldn't get the location of the shared container for the app group"
-      )
-    }
-
     let fileUrl = constructFileLocation(
-      location: sharedLocation,
+      location: self.sharedLocation,
       fileName: fileName
     )
     let _ = self.fileManager.createFile(
@@ -96,11 +100,6 @@ struct SharedPersistence {
   }
 
   private func createImagesDirectory(at directory: String) throws -> URL {
-    guard let sharedLocation = try getPersistenceLocation() else {
-      throw ShareError.cannotFindAppGroupContainer(
-        "Couldn't get the location of the shared container for the app group"
-      )
-    }
     let imagesDirectory = sharedLocation.appending(path: directory)
     try self.fileManager.createDirectory(
       at: imagesDirectory,
@@ -118,9 +117,7 @@ struct SharedPersistence {
     return fileLocation
   }
 
-  private func getPersistenceLocation() throws -> URL? {
-    let appGroup = "group.SewingPlanner"
-
+  private func getPersistenceLocation(_ appGroup: String) throws -> URL? {
     return self.fileManager.containerURL(
       forSecurityApplicationGroupIdentifier: appGroup
     )
@@ -129,14 +126,9 @@ struct SharedPersistence {
   #if DEBUG
     func removeSharedData() throws {
       let fileManager = FileManager.default
-      guard let sharedLocation = try getPersistenceLocation() else {
-        throw ShareError.cannotFindAppGroupContainer(
-          "Couldn't get the location of the shared container for the app group"
-        )
-      }
 
       let projectsUrl = constructFileLocation(
-        location: sharedLocation,
+        location: self.sharedLocation,
         fileName: "projects"
       )
       do {
@@ -149,7 +141,7 @@ struct SharedPersistence {
       }
 
       let sharedImagesFileUrl = constructFileLocation(
-        location: sharedLocation,
+        location: self.sharedLocation,
         fileName: "sharedImages"
       )
       do {
@@ -161,7 +153,7 @@ struct SharedPersistence {
         print(error.localizedDescription)
       }
 
-      let imagesFolderPath = sharedLocation.appending(
+      let imagesFolderPath = self.sharedLocation.appending(
         path: "SharedImages"
       )
       do {
