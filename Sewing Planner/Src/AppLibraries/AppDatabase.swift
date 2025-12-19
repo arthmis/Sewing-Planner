@@ -228,41 +228,47 @@ extension AppDatabase {
     return sectionItems
   }
 
-  func getProjectThumbnails(projectId: Int64) throws -> [ProjectImage] {
+  func getProjectImageRecords(projectId: Int64) throws -> [ProjectImageRecord] {
     return try dbWriter.read { db in
       let projectIdColumn = Column("projectId")
       let records: [ProjectImageRecord] = try ProjectImageRecord.all()
         .filter(projectIdColumn == projectId).order(Column("id"))
         .fetchAll(db)
 
-      var projectImages: [ProjectImage] = []
-      for record in records {
-        do {
-          let thumbnailData = try AppFiles().getThumbnailImage(
-            for: record.thumbnail,
-            fromProject: projectId
-          )
-          // TODO: show a placeholder image or view instead of ignoring the image that failed to load
-          // inform the user of this error
-          guard let thumbnail = thumbnailData else {
-            NSLog(
-              "couldn't get image thumbnail \(record.thumbnail) for project: \(projectId)"
-            )
-            continue
-          }
-          let projectImage = ProjectImage(
-            record: record,
-            path: record.filePath,
-            image: thumbnail
-          )
-          projectImages.append(projectImage)
-        } catch {
-          // add error handling but don't exit the function
-        }
-      }
-
-      return projectImages
+      return records
     }
+
+  }
+
+  func getProjectThumbnails(projectId: Int64, records: [ProjectImageRecord]) -> [ProjectImage] {
+    var projectImages: [ProjectImage] = []
+
+    for record in records {
+      do {
+        let thumbnailData = try AppFiles().getThumbnailImage(
+          for: record.thumbnail,
+          fromProject: projectId
+        )
+        // TODO: show a placeholder image or view instead of ignoring the image that failed to load
+        // inform the user of this error
+        guard let thumbnail = thumbnailData else {
+          NSLog(
+            "couldn't get image thumbnail \(record.thumbnail) for project: \(projectId)"
+          )
+          continue
+        }
+        let projectImage = ProjectImage(
+          record: record,
+          path: record.filePath,
+          image: thumbnail
+        )
+        projectImages.append(projectImage)
+      } catch {
+        // add error handling but don't exit the function
+      }
+    }
+
+    return projectImages
   }
 }
 

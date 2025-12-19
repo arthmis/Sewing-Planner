@@ -49,35 +49,42 @@ extension View {
         onPress()
       } onRelease: {
         onRelease()
-      })
+      }
+    )
   }
 }
 
 struct ImageButton: View {
   @State var isHovering = false
-  @Binding var image: ProjectImage
+  let image: ProjectImage
   @Binding var selectedImage: OverlayedImage?
   @State var isPressed = false
 
   var body: some View {
-    Image(uiImage: image.image)
-      .resizable()
-      .aspectRatio(contentMode: .fill)
-      .frame(minWidth: 100, maxWidth: .infinity, minHeight: 200, alignment: .center)
-      .clipped()
-      .scaleEffect(isPressed ? 0.925 : 1)
-      .animation(.easeOut(duration: 0.12), value: isPressed)
-      // .background(Color(hex: 0xDDDDDD, opacity: isPressed ? 1 : 0))
-      // parts of the image that were clipped still respond to the mouse events so this constrains it to the correct area
-      .contentShape(Rectangle())
-      .onTapGesture {
-        selectedImage = OverlayedImage(body: image.path)
-      }
-      .onPress {
-        isPressed = true
-      } onRelease: {
-        isPressed = false
-      }
+    if let projectImage = image.image {
+      Image(uiImage: projectImage)
+        .resizable()
+        .aspectRatio(contentMode: .fill)
+        .frame(minWidth: 100, maxWidth: .infinity, minHeight: 200, alignment: .center)
+        .clipped()
+        .scaleEffect(isPressed ? 0.925 : 1)
+        .animation(.easeOut(duration: 0.12), value: isPressed)
+        // .background(Color(hex: 0xDDDDDD, opacity: isPressed ? 1 : 0))
+        // parts of the image that were clipped still respond to the mouse events so this constrains it to the correct area
+        .contentShape(Rectangle())
+        .onTapGesture {
+          selectedImage = OverlayedImage(body: image.path)
+        }
+        .onPress {
+          isPressed = true
+        } onRelease: {
+          isPressed = false
+        }
+    } else {
+      ProgressView()
+        .frame(minWidth: 100, maxWidth: .infinity, minHeight: 200, alignment: .center)
+        .clipped()
+    }
   }
 }
 
@@ -92,44 +99,50 @@ struct SelectedImageButton: View {
   }
 
   var body: some View {
-    Image(uiImage: image.image)
-      .resizable()
-      .aspectRatio(contentMode: .fill)
-      .frame(minWidth: 100, maxWidth: .infinity, minHeight: 200, alignment: .center)
-      .clipped()
-      .animation(.easeOut(duration: 0.08), value: isPressed)
-      .background(Color(hex: 0xDDDDDD, opacity: isPressed ? 1 : 0))
-      // parts of the image that were clipped still respond to the mouse events so this constrains it to the correct area
-      .contentShape(Rectangle())
-      .overlay(alignment: .center) {
-        if isSelectedForDeletion {
-          Rectangle()
-            .foregroundStyle(Color.gray.opacity(0.4))
+    if let projectImage = image.image {
+      Image(uiImage: projectImage)
+        .resizable()
+        .aspectRatio(contentMode: .fill)
+        .frame(minWidth: 100, maxWidth: .infinity, minHeight: 200, alignment: .center)
+        .clipped()
+        .animation(.easeOut(duration: 0.08), value: isPressed)
+        .background(Color(hex: 0xDDDDDD, opacity: isPressed ? 1 : 0))
+        // parts of the image that were clipped still respond to the mouse events so this constrains it to the correct area
+        .contentShape(Rectangle())
+        .overlay(alignment: .center) {
+          if isSelectedForDeletion {
+            Rectangle()
+              .foregroundStyle(Color.gray.opacity(0.4))
+          }
         }
-      }
-      .overlay(alignment: .bottomTrailing) {
-        if isSelectedForDeletion {
-          Image(systemName: "checkmark.circle.fill")
-            .font(.system(size: 24))
-            .foregroundStyle(.white, .white, .blue)
-            .frame(width: 28, height: 28)
-            .background(Color.white)
-            .clipShape(Circle())
-            .padding([.bottom, .trailing], 16)
+        .overlay(alignment: .bottomTrailing) {
+          if isSelectedForDeletion {
+            Image(systemName: "checkmark.circle.fill")
+              .font(.system(size: 24))
+              .foregroundStyle(.white, .white, .blue)
+              .frame(width: 28, height: 28)
+              .background(Color.white)
+              .clipShape(Circle())
+              .padding([.bottom, .trailing], 16)
+          }
         }
-      }
-      .onTapGesture {
-        if !isSelectedForDeletion {
-          selectedImagesForDeletion.insert(image.path)
-        } else {
-          selectedImagesForDeletion.remove(image.path)
+        .onTapGesture {
+          if !isSelectedForDeletion {
+            selectedImagesForDeletion.insert(image.path)
+          } else {
+            selectedImagesForDeletion.remove(image.path)
+          }
         }
-      }
-      .onPress {
-        isPressed = true
-      } onRelease: {
-        isPressed = false
-      }
+        .onPress {
+          isPressed = true
+        } onRelease: {
+          isPressed = false
+        }
+    } else {
+      ProgressView()
+        .frame(minWidth: 100, maxWidth: .infinity, minHeight: 200, alignment: .center)
+        .clipped()
+    }
   }
 }
 

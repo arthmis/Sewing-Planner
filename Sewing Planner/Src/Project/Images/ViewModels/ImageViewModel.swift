@@ -9,7 +9,7 @@ import GRDB
 import PhotosUI
 import SwiftUI
 
-@Observable
+@MainActor @Observable
 class ProjectImages {
   let projectId: Int64
   var images: [ProjectImage] = []
@@ -28,6 +28,22 @@ class ProjectImages {
   init(projectId: Int64, images: [ProjectImage]) {
     self.projectId = projectId
     self.images = images
+  }
+
+  static func getImages(with id: Int64, from db: AppDatabase) throws -> ProjectImages {
+    let records = try db.getProjectImageRecords(projectId: id)
+
+    if records.isEmpty {
+      return ProjectImages(
+        projectId: id
+      )
+    }
+
+    let projectImages = records.map { record in
+      return ProjectImage(record: record, path: record.filePath)
+    }
+
+    return ProjectImages(projectId: id, images: projectImages)
   }
 
   func importImages(_ newImages: [ProjectImageInput], db: AppDatabase) throws {
@@ -132,7 +148,11 @@ class ProjectImages {
     AppFiles().getImage(for: imageIdentifier, fromProject: projectId) ?? UIImage()
   }
 
-  func loadProjectImages(db: AppDatabase) throws {
+  func loadProjectImages(db: AppDatabase) async throws {
+    let records = self.images.map { image in
+      return image.record
+    }
+
     do {
       try loadSharedImages(db: db)
     } catch {
@@ -140,9 +160,12 @@ class ProjectImages {
       // TODO: decide what I want to do here
     }
 
-    if images.isEmpty {
-      images = try db.getProjectThumbnails(projectId: projectId)
+    let images = db.getProjectThumbnails(projectId: projectId, records: records)
+
+    await MainActor.run {
+      self.images = images
     }
+
   }
 
   private func loadSharedImages(db: AppDatabase) throws {
@@ -181,18 +204,25 @@ class ProjectImages {
 struct ProjectImage {
   var record: ProjectImageRecord
   var path: String
-  var image: UIImage
+  var image: UIImage?
 
   init(record: ProjectImageRecord, path: String, image: UIImage) {
     self.record = record
     self.image = image
     self.path = path
   }
+
+  init(record: ProjectImageRecord, path: String) {
+    self.record = record
+    self.image = nil
+    self.path = path
+  }
 }
 
 extension ProjectImage: Hashable {
   static func == (lhs: ProjectImage, rhs: ProjectImage) -> Bool {
-    return lhs.path == rhs.path
+    // TODO: figure out a better way to compare image if image can be nil
+    return lhs.path == rhs.path && (lhs.image != nil) == (rhs.image != nil)
   }
 
   func hash(into hasher: inout Hasher) {

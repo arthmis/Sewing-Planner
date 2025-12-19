@@ -63,7 +63,7 @@ struct ImagesView: View {
           ) {
             ForEach($model.images, id: \.self.path) { $image in
               if !model.isInDeleteMode {
-                ImageButton(image: $image, selectedImage: $model.overlayedImage)
+                ImageButton(image: image, selectedImage: $model.overlayedImage)
                   .onLongPressGesture {
                     model.didSetDeleteMode()
                     model.selectedImages.insert(image.path)
@@ -130,7 +130,7 @@ struct ImagesView: View {
     .animation(.easeOut(duration: 0.1), value: model.overlayedImage)
     .task {
       do {
-        try model.loadProjectImages(db: db)
+        try await model.loadProjectImages(db: db)
       } catch {
         project.handleError(error: .loadImages)
       }
