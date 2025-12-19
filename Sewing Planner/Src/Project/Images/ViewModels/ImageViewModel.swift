@@ -222,7 +222,7 @@ struct ProjectImage {
 extension ProjectImage: Hashable {
   static func == (lhs: ProjectImage, rhs: ProjectImage) -> Bool {
     // TODO: figure out a better way to compare image if image can be nil
-    return lhs.path == rhs.path && (lhs.image != nil) == (rhs.image != nil)
+    return lhs.path == rhs.path && lhs.image == rhs.image
   }
 
   func hash(into hasher: inout Hasher) {
