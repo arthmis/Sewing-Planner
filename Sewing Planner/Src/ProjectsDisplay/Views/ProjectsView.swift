@@ -194,14 +194,10 @@ struct MaybeProjectImageView: View {
 
   var image: UIImage {
     let displayedImage =
-      if let imageData = projectImage {
-        if let image = imageData.image {
-          image
-        } else {
-          UIImage(named: "vecteezy_sewing-machine-icon-style_8737393")
-        }
+      if let imageData = projectImage, let image = imageData.image {
+        image
       } else {
-        UIImage(named: "vecteezy_sewing-machine-icon-style_8737393")
+        UIImage(named: "sewing-machine-no-project-image")
       }
     return displayedImage!
   }
@@ -210,7 +206,7 @@ struct MaybeProjectImageView: View {
     Image(uiImage: image)
       .resizable()
       .interpolation(.high)
-      .aspectRatio(contentMode: .fill)
+      .aspectRatio(contentMode: .fit)
       .frame(
         minWidth: 100,
         maxWidth: .infinity,
