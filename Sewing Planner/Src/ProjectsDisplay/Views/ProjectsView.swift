@@ -54,7 +54,7 @@ struct ProjectsView: View {
         VStack {
           if !(settings.getUserCreatedProjectFirstTime() ?? false) {
             VStack {
-              Text("Welcome to Fabric Stash!")
+              Text("Welcome to Sewing Planner!")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .font(.system(size: 40))
                 .padding(.top, 28)

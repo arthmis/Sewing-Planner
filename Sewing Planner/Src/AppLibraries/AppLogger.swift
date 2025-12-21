@@ -179,7 +179,7 @@ private struct SwiftOsLog: LogHandler {
 
   init(label: String) {
     self.label = label
-    logger = os.Logger(subsystem: "com.fabricstash.settings", category: "")
+    logger = os.Logger(subsystem: "com.sewingplanner.settings", category: "")
   }
 
   func log(

@@ -15,13 +15,14 @@ class AppSettings {
   private let logger: AppLogger
 
   init(
-    directoryName: String, data: [String: Data]? = nil,
+    directoryName: String,
+    data: [String: Data]? = nil,
     settingsFileManager: (any AppSettingsFileManagerProtocol)? = nil,
     logger: AppLogger
   ) {
     self.directoryName = directoryName
     self.data = data ?? [:]
-    self.logger = AppLogger(label: "com.fabricstash.settings")
+    self.logger = AppLogger(label: "com.sewingplanner.settings")
 
     let fileManager = FileManager.default
     self.settingsFileManager =
@@ -93,7 +94,7 @@ private struct AppSettingsFileManager: AppSettingsFileManagerProtocol {
   init(fileManager: FileManager, directoryName: String, logger: AppLogger? = nil) {
     self.fileManager = fileManager
     self.directoryName = directoryName
-    self.logger = logger ?? AppLogger(label: "com.fabricstash.settings.filemanager")
+    self.logger = logger ?? AppLogger(label: "com.sewingplanner.settings.filemanager")
   }
 
   func writeSettings(_ data: Data) throws {
@@ -103,11 +104,15 @@ private struct AppSettingsFileManager: AppSettingsFileManagerProtocol {
 
     if !settingsFolderExists {
       try fileManager.createDirectory(
-        at: settingsDirectory, withIntermediateDirectories: true, attributes: nil)
+        at: settingsDirectory,
+        withIntermediateDirectories: true,
+        attributes: nil
+      )
     }
 
     let filePath = settingsDirectory.appendingPathComponent("settings").appendingPathExtension(
-      for: .json)
+      for: .json
+    )
 
     try data.write(to: filePath, options: [.atomic, .completeFileProtection])
   }
@@ -119,11 +124,15 @@ private struct AppSettingsFileManager: AppSettingsFileManagerProtocol {
 
     if !settingsFolderExists {
       try fileManager.createDirectory(
-        at: settingsDirectory, withIntermediateDirectories: true, attributes: nil)
+        at: settingsDirectory,
+        withIntermediateDirectories: true,
+        attributes: nil
+      )
     }
 
     let filePath = settingsDirectory.appendingPathComponent("settings").appendingPathExtension(
-      for: .json)
+      for: .json
+    )
 
     return try Data(contentsOf: filePath)
   }
