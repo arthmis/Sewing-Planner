@@ -19,6 +19,16 @@ struct ReceiveImageView: View {
     projects.isEmpty
   }
 
+  private var helpMessage: some View {
+    VStack {
+      Text(
+        "Couldn't load the shared image. Please try again and also ensure the shared content is an image and not a url or text."
+      )
+      .padding(.top, 20)
+      Spacer()
+    }
+  }
+
   var body: some View {
     VStack {
       HStack {
@@ -31,7 +41,8 @@ struct ReceiveImageView: View {
             .fontWeight(.light)
             .foregroundStyle(Color.black.opacity(0.8))
         }
-        .padding(.trailing, 8)
+        .padding([.trailing, .top], 8)
+
       }
       if hasNoProject {
         Text(
@@ -44,47 +55,46 @@ struct ReceiveImageView: View {
               .aspectRatio(contentMode: .fit)
               .padding(12)
           } else {
-            Text("Couldn't load image")
+            helpMessage
           }
         } else {
-          Text("Couldn't load image")
+          helpMessage
         }
-
       } else {
-        Picker("Project", selection: $selection) {
-          ForEach(projects, id: \.self.id) { project in
-            Text(project.name)
-          }
-        }
-        .pickerStyle(.menu)
-
         if let image = image {
           if let sharedImage = UIImage(data: image) {
+            Picker("Project", selection: $selection) {
+              ForEach(projects, id: \.self.id) { project in
+                Text(project.name)
+              }
+            }
+            .pickerStyle(.menu)
+
             Image(uiImage: sharedImage)
               .resizable()
               .aspectRatio(contentMode: .fit)
               .padding(12)
+
+            Button("Save to selected project") {
+              do {
+                try saveImageForProject(
+                  projectId: selection,
+                  image: image
+                )
+                dismiss()
+              } catch {
+                // TODO: display error
+                self.error = "Couldn't save image. Please try again."
+                self.showError = true
+              }
+            }
           } else {
-            Text("Couldn't load image")
+            helpMessage
           }
         } else {
-          Text("Couldn't load image")
+          helpMessage
         }
 
-        Button("Save to selected project") {
-          do {
-            try saveImageForProject(
-              projectId: selection,
-              image: image
-            )
-            dismiss()
-          } catch {
-            // TODO: display error
-            self.error = "Couldn't save image. Please try again."
-            self.showError = true
-          }
-        }
-        .disabled(image == nil || hasNoProject)
       }
     }
     .alert(

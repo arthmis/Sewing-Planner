@@ -91,6 +91,10 @@ class ShareViewController: UIViewController {
           task.resume()
         }
       }
+    } else {
+      DispatchQueue.main.async {
+        self.displayView(data: nil)
+      }
     }
   }
 

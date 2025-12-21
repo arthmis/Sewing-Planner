@@ -15,7 +15,6 @@
                      $attachment,
                      ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.image" ||
                      ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.file-url" ||
-                     ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.url" ||
                      ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.heic" ||
                      ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.heif" ||
                      ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "com.apple.live-photo" ||
