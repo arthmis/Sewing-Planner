@@ -75,6 +75,7 @@ struct ReceiveImageView: View {
               .aspectRatio(contentMode: .fit)
               .padding(12)
 
+            Spacer()
             Button("Save to selected project") {
               do {
                 try saveImageForProject(
@@ -88,6 +89,7 @@ struct ReceiveImageView: View {
                 self.showError = true
               }
             }
+            .padding(.bottom, 20)
           } else {
             helpMessage
           }
