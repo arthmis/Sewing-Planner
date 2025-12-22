@@ -100,34 +100,30 @@ struct ProjectsView: View {
             )
           }
         }
-        .toolbar {
-          ToolbarItem(placement: .bottomBar) {
-            HStack {
-              Button("New Project") {
+
+        HStack {
+          Button("New Project") {
+            do {
+              try store.addProject()
+              if !(settings.getUserCreatedProjectFirstTime() ?? false) {
                 do {
-                  try store.addProject()
-                  if !(settings.getUserCreatedProjectFirstTime() ?? false) {
-                    do {
-                      try settings.userCreatedProjectFirstTime(val: true)
-                    } catch {
-                      // TODO: log error
-                      print(error)
-                    }
-                  }
-                } catch AppError.addProject {
-                  store.appError = .addProject
+                  try settings.userCreatedProjectFirstTime(val: true)
                 } catch {
-                  store.appError = .unexpectedError
+                  // TODO: log error
                   print(error)
                 }
               }
-              .buttonStyle(PrimaryButtonStyle())
-              .padding(.bottom, 24)
-              .accessibilityIdentifier("AddNewProjectButton")
+            } catch AppError.addProject {
+              store.appError = .addProject
+            } catch {
+              store.appError = .unexpectedError
+              print(error)
             }
           }
+          .buttonStyle(PrimaryButtonStyle())
+          .padding(.bottom, 12)
+          .accessibilityIdentifier("AddNewProjectButton")
         }
-        .toolbarBackground(.white, for: .bottomBar)
       }
       .navigationTitle("Projects")
       .frame(
