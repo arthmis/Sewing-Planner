@@ -190,8 +190,12 @@ struct SectionView: View {
         }
         .frame(maxWidth: .infinity)
       }
-      AddItemView(isAddingItem: $model.isAddingItem, addItem: model.addItem)
-        .padding(.top, 8)
+      AddItemView(
+        isAddingItem: $model.isAddingItem,
+        addItem: model.addItem,
+        sectionId: model.section.id
+      )
+      .padding(.top, 8)
     }
     .animation(.easeOut(duration: 0.15), value: model.isAddingItem)
     .confirmationDialog(

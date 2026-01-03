@@ -15,6 +15,7 @@ struct AddItemView: View {
   let addItem: (_ text: String, _ note: String?, AppDatabase) throws -> Void
   @State var showErrorText = false
   @State var itemNote = ""
+  let sectionId: Int64
   let errorText = "Item text can't be empty."
 
   private var isNewItemTextValid: Bool {
@@ -31,7 +32,10 @@ struct AddItemView: View {
     let validNoteText = itemNote.trimmingCharacters(in: .whitespacesAndNewlines)
     let noteText = validNoteText.isEmpty ? nil : validNoteText
     do {
-      try addItem(validText, noteText, db)
+      project.send(
+        event: .StoreSectionItem(text: validText, note: noteText, sectionId: sectionId),
+        db: db
+      )
     } catch {
       project.handleError(error: .addSectionItem)
     }

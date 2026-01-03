@@ -278,6 +278,8 @@ enum ProjectEvent {
   case UpdateSectionName(section: SectionRecord, oldName: String)
   case markSectionForDeletion(SectionRecord)
   case RemoveSection(Int64)
+  case StoreSectionItem(text: String, note: String?, sectionId: Int64)
+  case AddSectionItem(item: SectionItem, sectionId: Int64)
   case ProjectError(ProjectError)
 }
 
@@ -349,6 +351,32 @@ extension ProjectViewModel {
           case .updateSectionItemText:
             break
         }
+      case .StoreSectionItem(let text, let note, let sectionId):
+        guard
+          let index = self.projectData.sections.firstIndex(where: { section in
+            section.section.id == sectionId
+          })
+        else {
+          // TODO log an error here because this shouldn't be possible
+          return nil
+        }
+        let order = self.projectData.sections[index].items.count
+        return .SaveSectionItem(
+          text: text.trimmingCharacters(in: .whitespacesAndNewlines),
+          note: note,
+          order: Int64(order),
+          sectionId: sectionId
+        )
+      case .AddSectionItem(let item, let sectionId):
+        guard
+          let index = self.projectData.sections.firstIndex(where: { section in
+            section.section.id == sectionId
+          })
+        else {
+          // TODO log an error here because this shouldn't be possible
+          return nil
+        }
+        self.projectData.sections[index].items.append(item)
     }
 
     return nil
@@ -409,6 +437,50 @@ extension ProjectViewModel {
 
       case .doNothing:
         return
+      case .SaveSectionItem(let text, let note, let order, let sectionId):
+        Task {
+          let sectionItem: SectionItem? = try await db.getWriter().write { db in
+            var recordInput = SectionItemInputRecord(
+              text: text,
+              order: order,
+              sectionId: sectionId
+            )
+            do {
+              try recordInput.save(db)
+            } catch {
+              // TODO: log error
+              return nil
+            }
+            let record = SectionItemRecord(from: recordInput)
+
+            do {
+              if let noteText = note {
+                var noteInputRecord = SectionItemNoteInputRecord(
+                  text: noteText.trimmingCharacters(in: .whitespacesAndNewlines),
+                  sectionItemId: record.id
+                )
+                try noteInputRecord.save(db)
+                let noteRecord = SectionItemNoteRecord(from: noteInputRecord)
+                let sectionItem = SectionItem(record: record, note: noteRecord)
+                return sectionItem
+              } else {
+                let sectionItem = SectionItem(record: record, note: nil)
+                return sectionItem
+              }
+            } catch {
+              // TODO: log error
+              return nil
+            }
+          }
+
+          if let sectionItem = sectionItem {
+            await MainActor.run {
+              _ = self.handleEvent(
+                .AddSectionItem(item: sectionItem, sectionId: sectionId)
+              )
+            }
+          }
+        }
     }
   }
 
@@ -463,6 +535,7 @@ enum Effect: Equatable {
   case deleteSection(section: SectionRecord)
   case updateProjectTitle(projectData: ProjectMetadata)
   case updateSectionName(section: SectionRecord, oldName: String)
+  case SaveSectionItem(text: String, note: String?, order: Int64, sectionId: Int64)
   case doNothing
 }
 
