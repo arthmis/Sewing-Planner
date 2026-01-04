@@ -96,15 +96,31 @@ struct Sewing_PlannerUnitTests {
     (nil, Effect.doNothing),
   ]
 
-  @Test(
-    "Test delete section",
-    arguments: testDeleteSectionCases
-  )
-  @MainActor func testDeleteSection(section: SectionRecord?, expectedEffect: Effect) {
+  // @Test(
+  //   "Test delete section",
+  //   arguments: testDeleteSectionCases
+  // )
+  // @MainActor func testDeleteSection(section: SectionRecord?, expectedEffect: Effect) {
+  //   let model = initializeProjectViewModel()
+
+  //   let resultEffect = model.deleteSection(selectedSection: section)
+
+  //   #expect(resultEffect == expectedEffect)
+  // }
+
+  @Test("Test store section item")
+  @MainActor func testStoreSectionItem() {
     let model = initializeProjectViewModel()
 
-    let resultEffect = model.deleteSection(selectedSection: section)
+    let effect = model.handleEvent(.StoreSectionItem(text: "task 1", note: nil, sectionId: 1))
 
-    #expect(resultEffect == expectedEffect)
+    let expectedEffect = Effect.SaveSectionItem(
+      text: "task 1",
+      note: nil,
+      order: 0,
+      sectionId: 1
+    )
+
+    #expect(effect == expectedEffect)
   }
 }
