@@ -56,8 +56,8 @@ extension AppSettings: Settings {
     let data = try encoder.encode(value)
 
     _ = self.data.updateValue(data, forKey: key)
-    let dataToPersist = try encoder.encode(self.data)
 
+    let dataToPersist = try encoder.encode(self.data)
     try settingsFileManager.writeSettings(dataToPersist)
   }
 

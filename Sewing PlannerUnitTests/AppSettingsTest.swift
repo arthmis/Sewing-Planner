@@ -15,11 +15,9 @@ struct AppSettingTests {
     )
 
     let userCreatedProjectSetting = true
-    let encoder = JSONEncoder()
-    try! appSettings.set(encoder.encode(userCreatedProjectSetting), forKey: "created project")
+    try! appSettings.set(userCreatedProjectSetting, forKey: "created_project")
 
-    let retrievedSetting: Bool? = try! appSettings.get(forKey: "created project")
-
+    let retrievedSetting: Bool? = try! appSettings.get(forKey: "created_project")
     #expect(retrievedSetting! == userCreatedProjectSetting)
   }
 
