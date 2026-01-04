@@ -481,6 +481,7 @@ extension ProjectViewModel {
             }
           }
         }
+        return
     }
   }
 
