@@ -123,4 +123,23 @@ struct Sewing_PlannerUnitTests {
 
     #expect(effect == expectedEffect)
   }
+
+  @Test("Test add section item")
+  @MainActor func testAddSectionItem() {
+    let model = initializeProjectViewModel()
+
+    let sectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
+    )
+    let effect = model.handleEvent(
+      .AddSectionItem(item: SectionItem(record: sectionTextRecord), sectionId: 1)
+    )
+
+    #expect(effect == nil)
+
+    let section = model.projectData.sections.first(where: { $0.section.id == 1 })!
+    #expect(section.items.count == 1)
+    #expect(section.items[0].record.id == 1)
+
+  }
 }
