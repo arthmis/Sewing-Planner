@@ -11,21 +11,23 @@ import Testing
 @testable import Sewing_Planner
 
 struct Sewing_PlannerUnitTests {
-  @MainActor private func initializeProjectViewModel() -> ProjectViewModel {
+  @MainActor private func initializeProjectViewModel(sections: [Section]? = nil) -> ProjectViewModel
+  {
     let now = Date()
-    let sections = [
-      Section(
-        id: UUID(),
-        name: SectionRecord(
-          id: 1,
-          projectId: 1,
-          name: "Section 1",
-          isDeleted: false,
-          createDate: now,
-          updateDate: now
+    let sections =
+      sections ?? [
+        Section(
+          id: UUID(),
+          name: SectionRecord(
+            id: 1,
+            projectId: 1,
+            name: "Section 1",
+            isDeleted: false,
+            createDate: now,
+            updateDate: now
+          )
         )
-      )
-    ]
+      ]
     let projectMetadata = ProjectMetadata(
       id: 1,
       name: "Project 1",
@@ -92,21 +94,48 @@ struct Sewing_PlannerUnitTests {
           updateDate: Date(timeIntervalSinceReferenceDate: 0)
         )
       )
-    ),
-    (nil, Effect.doNothing),
+    )
   ]
 
-  // @Test(
-  //   "Test delete section",
-  //   arguments: testDeleteSectionCases
-  // )
-  // @MainActor func testDeleteSection(section: SectionRecord?, expectedEffect: Effect) {
-  //   let model = initializeProjectViewModel()
+  @Test(
+    "Test initiate delete section",
+    arguments: testDeleteSectionCases
+  )
+  @MainActor func testInitiateDeleteSection(section: SectionRecord, expectedEffect: Effect) {
+    let model = initializeProjectViewModel()
 
-  //   let resultEffect = model.deleteSection(selectedSection: section)
+    let resultEffect = model.handleEvent(.markSectionForDeletion(section))
+    #expect(resultEffect == expectedEffect)
 
-  //   #expect(resultEffect == expectedEffect)
-  // }
+    let section = model.projectData.sections.first(where: { $0.section.id == section.id })
+    #expect(section!.isBeingDeleted == true)
+  }
+
+  @Test("Test remove section")
+  @MainActor func testRemoveSection() {
+    let now = Date.now
+    let sections = [
+      Section(
+        id: UUID(),
+        name: SectionRecord(
+          id: 1,
+          projectId: 1,
+          name: "Section 1",
+          isDeleted: false,
+          createDate: now,
+          updateDate: now
+        )
+      )
+    ]
+    sections[0].isBeingDeleted = true
+    let model = initializeProjectViewModel(sections: sections)
+
+    let resultEffect = model.handleEvent(.RemoveSection(1))
+    #expect(resultEffect == nil)
+
+    let section = model.projectData.sections.first(where: { $0.section.id == 1 })
+    #expect(section == nil)
+  }
 
   @Test("Test store section item")
   @MainActor func testStoreSectionItem() {
