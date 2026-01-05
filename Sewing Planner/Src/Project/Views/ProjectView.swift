@@ -283,6 +283,7 @@ enum ProjectEvent {
   case UpdateSectionItemText(item: SectionItem, sectionId: Int64)
   case toggleSectionItemCompletionStatus(SectionItemRecord, sectionId: Int64)
   case UpdateSectionItem(item: SectionItemRecord, sectionId: Int64)
+  case toggleSelectedSectionItem(withId: Int64, fromSectionWithId: Int64)
   case AddSectionItem(item: SectionItem, sectionId: Int64)
   case ProjectError(ProjectError)
 }
@@ -431,6 +432,24 @@ extension ProjectViewModel {
         self.projectData.sections[index].items[itemIndex].record = updatedItem
         return nil
 
+      case .toggleSelectedSectionItem(let itemId, let sectionId):
+        guard
+          let sectionIndex = self.projectData.sections.firstIndex(where: { section in
+            section.section.id == sectionId
+          })
+        else {
+          // TODO log an error here because this shouldn't be possible
+          // or even panic
+          return nil
+        }
+
+        if self.projectData.sections[sectionIndex].selectedItems.contains(itemId) {
+          self.projectData.sections[sectionIndex].selectedItems.remove(itemId)
+        } else {
+          self.projectData.sections[sectionIndex].selectedItems.insert(itemId)
+        }
+
+        return nil
     }
 
     return nil

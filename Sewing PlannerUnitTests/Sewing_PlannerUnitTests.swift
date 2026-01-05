@@ -318,4 +318,54 @@ struct Sewing_PlannerUnitTests {
     let updatedSectionItemState = section.items[0]
     #expect(updatedSectionItemState.record == updatedSectionTextRecord)
   }
+
+  @Test("toggle item selection for deletion")
+  @MainActor func testToggleItemSelectionForDeletion() {
+    let now = Date.now
+    let sections = [
+      Section(
+        section: SectionRecord(
+          id: 1,
+          projectId: 1,
+          name: "Section 1",
+          isDeleted: false,
+          createDate: now,
+          updateDate: now
+        ),
+        items: [
+          SectionItem(
+            record: SectionItemRecord(
+              from: SectionItemInputRecord(id: 1, text: "second task", order: 0, sectionId: 1)
+            )
+          ),
+          SectionItem(
+            record: SectionItemRecord(
+              from: SectionItemInputRecord(id: 2, text: "second task", order: 1, sectionId: 1)
+            )
+          ),
+        ],
+        id: UUID(),
+
+      )
+    ]
+    let model = initializeProjectViewModel(sections: sections)
+
+    let effect = model.handleEvent(
+      .toggleSelectedSectionItem(withId: 1, fromSectionWithId: 1)
+    )
+    #expect(effect == nil)
+
+    var section = model.projectData.sections.first(where: { $0.section.id == 1 })!
+    var item = section.items[0]
+    #expect(section.selectedItems.contains(item.record.id))
+    #expect(section.selectedItems.count == 1)
+
+    model.handleEvent(
+      .toggleSelectedSectionItem(withId: 1, fromSectionWithId: 1)
+    )
+    section = model.projectData.sections.first(where: { $0.section.id == 1 })!
+    item = section.items[0]
+    #expect(!section.selectedItems.contains(item.record.id))
+    #expect(section.selectedItems.count == 0)
+  }
 }

@@ -269,11 +269,10 @@ struct SelectedSectionItemView: View {
     .background(isSelected ? Color.blue.opacity(0.5) : Color.white)
     .clipShape(RoundedRectangle(cornerRadius: 8))
     .onTapGesture {
-      if !isSelected {
-        selected.insert(data.record.id)
-      } else {
-        selected.remove(data.record.id)
-      }
+      project.send(
+        event: .toggleSelectedSectionItem(withId: data.record.id, fromSectionWithId: sectionId),
+        db: db
+      )
     }
     .animation(.easeOut(duration: 0.1), value: isSelected)
   }
