@@ -10,14 +10,21 @@ import SwiftUI
 struct ItemView: View {
   @Binding var data: SectionItem
   @Environment(ProjectViewModel.self) var project
+  @Environment(\.db) var db
   @State var isEditing = false
   @State var newText = ""
   @State var newNoteText = ""
   let sectionId: Int64
-  var updateCompletedState: (Int64, AppDatabase) throws -> Void
 
   private var hasNote: Bool {
     data.note != nil
+  }
+
+  func toggleCompletedState() {
+    project.send(
+      event: .toggleSectionItemCompletionStatus(data.record, sectionId: sectionId),
+      db: db
+    )
   }
 
   var body: some View {
@@ -38,7 +45,7 @@ struct ItemView: View {
               CheckboxStyle(
                 id: data.record.id,
                 hasNote: hasNote,
-                updateCompletedState: updateCompletedState,
+                toggleCompletedState: toggleCompletedState,
                 isSelected: false
               )
             )
@@ -67,9 +74,9 @@ struct ItemView: View {
 struct CheckboxStyle: ToggleStyle {
   @Environment(ProjectViewModel.self) var project
   @Environment(\.db) var db
-  var id: Int64?
+  var id: Int64
   var hasNote: Bool
-  var updateCompletedState: (Int64, AppDatabase) throws -> Void
+  var toggleCompletedState: () -> Void
   let isSelected: Bool
 
   func makeBody(configuration: Configuration) -> some View {
@@ -78,11 +85,8 @@ struct CheckboxStyle: ToggleStyle {
         // TODO: move this side effect out of the checkbox
         // doesn't make sense for it to be here
         // might even need to make my own checkbox view
-        do {
-          try updateCompletedState(id!, db)
-        } catch {
-          project.handleError(error: .updateSectionItemCompletion)
-        }
+        toggleCompletedState()
+
         configuration.isOn.toggle()
       } label: {
         Image(systemName: configuration.isOn ? "checkmark.square" : "square")

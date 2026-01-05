@@ -152,7 +152,6 @@ struct SectionView: View {
             ItemView(
               data: $item,
               sectionId: model.section.id,
-              updateCompletedState: model.updateCompletedState,
             )
             .contentShape(Rectangle())
             .onLongPressGesture {
@@ -167,8 +166,7 @@ struct SectionView: View {
             SelectedSectionItemView(
               data: $item,
               selected: $model.selectedItems,
-              updateText: model.updateText,
-              updateCompletedState: model.updateCompletedState
+              sectionId: model.section.id
             )
             .contentShape(Rectangle())
             .onDrag {
@@ -227,11 +225,12 @@ struct SectionView: View {
 }
 
 struct SelectedSectionItemView: View {
+  @Environment(ProjectViewModel.self) var project
+  @Environment(\.db) var db
   @Binding var data: SectionItem
   @State var newText = ""
   @Binding var selected: Set<Int64>
-  var updateText: (Int64, String, String?, AppDatabase) throws -> Void
-  var updateCompletedState: (Int64, AppDatabase) throws -> Void
+  let sectionId: Int64
 
   var isSelected: Bool {
     selected.contains(data.record.id)
@@ -241,6 +240,13 @@ struct SelectedSectionItemView: View {
     data.note != nil
   }
 
+  func toggleCompletedState() {
+    project.send(
+      event: .toggleSectionItemCompletionStatus(data.record, sectionId: sectionId),
+      db: db
+    )
+  }
+
   var body: some View {
     HStack(alignment: .firstTextBaseline) {
       Toggle(data.record.text, isOn: $data.record.isComplete)
@@ -248,7 +254,7 @@ struct SelectedSectionItemView: View {
           CheckboxStyle(
             id: data.record.id,
             hasNote: hasNote,
-            updateCompletedState: updateCompletedState,
+            toggleCompletedState: toggleCompletedState,
             isSelected: isSelected
           )
         )

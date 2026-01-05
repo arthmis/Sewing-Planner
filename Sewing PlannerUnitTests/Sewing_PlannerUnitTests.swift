@@ -235,4 +235,87 @@ struct Sewing_PlannerUnitTests {
     let updatedSectionItemState = section.items[0]
     #expect(updatedSectionItemState == updatedSectionItem)
   }
+
+  @Test("Test update and store section item record completion status")
+  @MainActor func testUpdateSectionItemRecordCompletionStatus() {
+    let now = Date.now
+    let sectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
+    )
+    let sectionItem = SectionItem(record: sectionTextRecord)
+    let sections = [
+      Section(
+        section: SectionRecord(
+          id: 1,
+          projectId: 1,
+          name: "Section 1",
+          isDeleted: false,
+          createDate: now,
+          updateDate: now
+        ),
+        items: [
+          sectionItem
+        ],
+        id: UUID(),
+
+      )
+    ]
+    let model = initializeProjectViewModel(sections: sections)
+
+    var updatedSectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
+    )
+    let effect = model.handleEvent(
+      .toggleSectionItemCompletionStatus(updatedSectionTextRecord, sectionId: 1)
+    )
+
+    updatedSectionTextRecord.isComplete.toggle()
+    let expectedEffect: Effect? = Effect.SaveSectionItemUpdate(
+      updatedSectionTextRecord,
+      sectionId: 1
+    )
+    #expect(effect == expectedEffect)
+
+  }
+
+  @Test("Update section item record state")
+  @MainActor func testUpdateSectionItemRecord() {
+    let now = Date.now
+    let sectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
+    )
+    let sectionItem = SectionItem(record: sectionTextRecord)
+    let sections = [
+      Section(
+        section: SectionRecord(
+          id: 1,
+          projectId: 1,
+          name: "Section 1",
+          isDeleted: false,
+          createDate: now,
+          updateDate: now
+        ),
+        items: [
+          sectionItem
+        ],
+        id: UUID(),
+
+      )
+    ]
+    let model = initializeProjectViewModel(sections: sections)
+
+    var updatedSectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
+    )
+    updatedSectionTextRecord.isComplete.toggle()
+
+    let effect = model.handleEvent(
+      .UpdateSectionItem(item: updatedSectionTextRecord, sectionId: 1)
+    )
+    #expect(effect == nil)
+
+    let section = model.projectData.sections.first(where: { $0.section.id == 1 })!
+    let updatedSectionItemState = section.items[0]
+    #expect(updatedSectionItemState.record == updatedSectionTextRecord)
+  }
 }

@@ -31,14 +31,10 @@ struct AddItemView: View {
     let validText = newItem.trimmingCharacters(in: .whitespacesAndNewlines)
     let validNoteText = itemNote.trimmingCharacters(in: .whitespacesAndNewlines)
     let noteText = validNoteText.isEmpty ? nil : validNoteText
-    do {
-      project.send(
-        event: .StoreSectionItem(text: validText, note: noteText, sectionId: sectionId),
-        db: db
-      )
-    } catch {
-      project.handleError(error: .addSectionItem)
-    }
+    project.send(
+      event: .StoreSectionItem(text: validText, note: noteText, sectionId: sectionId),
+      db: db
+    )
     showErrorText = false
     isAddingItem = false
     newItem = ""

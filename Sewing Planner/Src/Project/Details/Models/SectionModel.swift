@@ -20,7 +20,12 @@ struct SectionRecord: Hashable, Identifiable, Codable, EncodableRecord, Fetchabl
   static let databaseTableName = "section"
 
   init(
-    id: Int64, projectId: Int64, name: String, isDeleted: Bool, createDate: Date, updateDate: Date
+    id: Int64,
+    projectId: Int64,
+    name: String,
+    isDeleted: Bool,
+    createDate: Date,
+    updateDate: Date
   ) {
     self.id = id
     self.projectId = projectId
