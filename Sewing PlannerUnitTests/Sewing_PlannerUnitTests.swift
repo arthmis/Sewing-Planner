@@ -171,4 +171,68 @@ struct Sewing_PlannerUnitTests {
     #expect(section.items[0].record.id == 1)
 
   }
+
+  @Test("Test initiate update section item text")
+  @MainActor func testInitiateStoreUpdatedSectionItemText() {
+    let model = initializeProjectViewModel()
+
+    let updatedSectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "new test", order: 0, sectionId: 1)
+    )
+    let updatedSectionItem = SectionItem(record: updatedSectionTextRecord)
+    let effect = model.handleEvent(
+      .StoreUpdatedSectionItemText(
+        item: updatedSectionItem,
+        sectionId: 1
+      )
+    )
+
+    let expectedEffect = Effect.SaveSectionItemTextUpdate(item: updatedSectionItem, sectionId: 1)
+    #expect(effect == expectedEffect)
+  }
+
+  @Test("Test update section item text in state")
+  @MainActor func testUpdateSectionItemText() {
+    let now = Date.now
+    let sectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
+    )
+    let sectionItem = SectionItem(record: sectionTextRecord)
+    let sections = [
+      Section(
+        section: SectionRecord(
+          id: 1,
+          projectId: 1,
+          name: "Section 1",
+          isDeleted: false,
+          createDate: now,
+          updateDate: now
+        ),
+        items: [
+          sectionItem
+        ],
+        id: UUID(),
+
+      )
+    ]
+    let model = initializeProjectViewModel(sections: sections)
+
+    let updatedSectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "new test", order: 0, sectionId: 1)
+    )
+    let updatedSectionItem = SectionItem(record: updatedSectionTextRecord)
+    let effect = model.handleEvent(
+      .UpdateSectionItemText(
+        item: updatedSectionItem,
+        sectionId: 1
+      )
+    )
+
+    let expectedEffect: Effect? = nil
+    #expect(effect == expectedEffect)
+
+    let section = model.projectData.sections.first(where: { $0.section.id == 1 })!
+    let updatedSectionItemState = section.items[0]
+    #expect(updatedSectionItemState == updatedSectionItem)
+  }
 }

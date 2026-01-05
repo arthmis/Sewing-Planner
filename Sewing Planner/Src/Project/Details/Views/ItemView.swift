@@ -13,13 +13,8 @@ struct ItemView: View {
   @State var isEditing = false
   @State var newText = ""
   @State var newNoteText = ""
-  var updateText: (Int64, String, String?, AppDatabase) throws -> Void
+  let sectionId: Int64
   var updateCompletedState: (Int64, AppDatabase) throws -> Void
-
-  func resetToPreviousText() {
-    newText = data.record.text
-    isEditing = false
-  }
 
   private var hasNote: Bool {
     data.note != nil
@@ -33,8 +28,7 @@ struct ItemView: View {
           isEditing: $isEditing,
           newText: $newText,
           newNoteText: $newNoteText,
-          updateText: updateText,
-          resetToPreviousText: resetToPreviousText
+          sectionId: sectionId,
         )
         .transition(.revealFrom(edge: .top).combined(with: .opacity))
       } else {

@@ -15,9 +15,8 @@ struct UpdateItemView: View {
   @Binding var newText: String
   @Binding var newNoteText: String
   @State var showErrorText = false
+  let sectionId: Int64
   let errorText = "Item text can't be empty."
-  let updateText: (Int64, String, String?, AppDatabase) throws -> Void
-  let resetToPreviousText: () -> Void
 
   private var isNewTextValid: Bool {
     newText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -32,12 +31,12 @@ struct UpdateItemView: View {
     let validText = newText.trimmingCharacters(in: .whitespacesAndNewlines)
     let validNoteText = newNoteText.trimmingCharacters(in: .whitespacesAndNewlines)
     let noteText = validNoteText.isEmpty ? nil : validNoteText
+    let updatedSectionItem = data.update(text: validText, noteText: noteText)
 
-    do {
-      try updateText(data.record.id, validText, noteText, db)
-    } catch {
-      project.handleError(error: .updateSectionItemText)
-    }
+    project.send(
+      event: .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId),
+      db: db
+    )
 
     showErrorText = false
     isEditing = false

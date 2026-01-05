@@ -151,7 +151,7 @@ struct SectionView: View {
           if !model.isEditingSection {
             ItemView(
               data: $item,
-              updateText: model.updateText,
+              sectionId: model.section.id,
               updateCompletedState: model.updateCompletedState,
             )
             .contentShape(Rectangle())

@@ -279,6 +279,8 @@ enum ProjectEvent {
   case markSectionForDeletion(SectionRecord)
   case RemoveSection(Int64)
   case StoreSectionItem(text: String, note: String?, sectionId: Int64)
+  case StoreUpdatedSectionItemText(item: SectionItem, sectionId: Int64)
+  case UpdateSectionItemText(item: SectionItem, sectionId: Int64)
   case AddSectionItem(item: SectionItem, sectionId: Int64)
   case ProjectError(ProjectError)
 }
@@ -377,6 +379,30 @@ extension ProjectViewModel {
           return nil
         }
         self.projectData.sections[index].items.append(item)
+      case .StoreUpdatedSectionItemText(item: let sectionItem, let sectionId):
+        return .SaveSectionItemTextUpdate(item: sectionItem, sectionId: sectionId)
+      case .UpdateSectionItemText(let updatedItem, let sectionId):
+        guard
+          let index = self.projectData.sections.firstIndex(where: { section in
+            section.section.id == sectionId
+          })
+        else {
+          // TODO log an error here because this shouldn't be possible
+          // or even panic
+          return nil
+        }
+
+        guard
+          let itemIndex = self.projectData.sections[index].items.firstIndex(where: {
+            $0.record.id == updatedItem.record.id
+          })
+        else {
+          // TODO log error or panic shouldn't be possible at this point
+          return nil
+        }
+
+        self.projectData.sections[index].items[itemIndex] = updatedItem
+        return nil
     }
 
     return nil
@@ -482,6 +508,17 @@ extension ProjectViewModel {
           }
         }
         return
+      case .SaveSectionItemTextUpdate(let item, let sectionId):
+        Task {
+          try await db.getWriter().write { db in
+            try item.record.update(db)
+            try item.note?.update(db)
+          }
+
+          await MainActor.run {
+            _ = self.handleEvent(.UpdateSectionItemText(item: item, sectionId: sectionId))
+          }
+        }
     }
   }
 
@@ -537,6 +574,7 @@ enum Effect: Equatable {
   case updateProjectTitle(projectData: ProjectMetadata)
   case updateSectionName(section: SectionRecord, oldName: String)
   case SaveSectionItem(text: String, note: String?, order: Int64, sectionId: Int64)
+  case SaveSectionItemTextUpdate(item: SectionItem, sectionId: Int64)
   case doNothing
 }
 
