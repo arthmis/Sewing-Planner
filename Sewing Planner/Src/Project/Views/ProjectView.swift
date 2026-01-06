@@ -116,7 +116,7 @@ struct ProjectView: View {
         ToolbarItem(placement: .primaryAction) {
           if project.currentView == CurrentView.details {
             Button {
-              project.addSection(db: db)
+              project.send(event: .AddSection(projectId: project.projectData.data.id), db: db)
             } label: {
               Image(systemName: "plus")
             }
@@ -275,6 +275,8 @@ final class ProjectViewModel {
 
 enum ProjectEvent {
   case UpdatedProjectTitle(String)
+  case AddSection(projectId: Int64)
+  case AddSectionToState(section: SectionRecord)
   case UpdateSectionName(section: SectionRecord, oldName: String)
   case markSectionForDeletion(SectionRecord)
   case RemoveSection(Int64)
@@ -298,9 +300,27 @@ enum ProjectEvent {
 extension ProjectViewModel {
   public func handleEvent(_ event: ProjectEvent) -> Effect? {
     switch event {
+
       case .UpdatedProjectTitle(let newTitle):
         projectData.data.name = newTitle
         return Effect.updateProjectTitle(projectData: projectData.data)
+
+      case .AddSection(let projectId):
+        let now = Date()
+        let sectionsCount = self.projectData.sections.count
+        let sectionInput = SectionInputRecord(
+          projectId: projectId,
+          name: "Section \(sectionsCount + 1)",
+          createDate: now,
+          updateDate: now
+        )
+        return .AddNewSection(section: sectionInput, projectId: projectId)
+
+      case .AddSectionToState(let sectionRecord):
+        let section = Section(id: UUID(), name: sectionRecord)
+        self.projectData.sections.append(section)
+
+        return nil
 
       case .UpdateSectionName(let section, let oldName):
         if let index = self.projectData.sections.firstIndex(where: { $0.section.id == section.id })
@@ -526,6 +546,24 @@ extension ProjectViewModel {
     }
 
     switch effect {
+      case .AddNewSection(let sectionInput, let projectId):
+        Task {
+          do {
+            let record = try await db.getWriter().write { [sectionInput] db in
+              return try sectionInput.saved(db)
+            }
+
+            let sectionRecord = SectionRecord(from: record)
+            await MainActor.run {
+              _ = self.handleEvent(.AddSectionToState(section: sectionRecord))
+            }
+          } catch {
+            await MainActor.run {
+              _ = self.handleEvent(.ProjectError(ProjectError.addSection))
+            }
+          }
+        }
+
       case .deleteSection(let section):
         Task {
           do {
@@ -739,6 +777,7 @@ extension ProjectViewModel {
 }
 
 enum Effect: Equatable {
+  case AddNewSection(section: SectionInputRecord, projectId: Int64)
   case deleteSection(section: SectionRecord)
   case updateProjectTitle(projectData: ProjectMetadata)
   case updateSectionName(section: SectionRecord, oldName: String)
