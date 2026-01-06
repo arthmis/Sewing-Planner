@@ -187,7 +187,7 @@ struct Sewing_PlannerUnitTests {
       )
     )
 
-    let expectedEffect = Effect.SaveSectionItemTextUpdate(item: updatedSectionItem, sectionId: 1)
+    let expectedEffect = Effect.SaveSectionItemUpdate(item: updatedSectionItem, sectionId: 1)
     #expect(effect == expectedEffect)
   }
 

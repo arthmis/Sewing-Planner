@@ -280,6 +280,11 @@ enum ProjectEvent {
   case RemoveSection(Int64)
   case StoreSectionItem(text: String, note: String?, sectionId: Int64)
   case StoreUpdatedSectionItemText(item: SectionItem, sectionId: Int64)
+  case StoreUpdatedSectionItemTextWithNewNote(
+    item: SectionItemRecord,
+    newNote: String,
+    sectionId: Int64
+  )
   case UpdateSectionItemText(item: SectionItem, sectionId: Int64)
   case toggleSectionItemCompletionStatus(SectionItemRecord, sectionId: Int64)
   case UpdateSectionItem(item: SectionItemRecord, sectionId: Int64)
@@ -390,6 +395,14 @@ extension ProjectViewModel {
 
       case .StoreUpdatedSectionItemText(item: let sectionItem, let sectionId):
         return .SaveSectionItemTextUpdate(item: sectionItem, sectionId: sectionId)
+
+      case .StoreUpdatedSectionItemTextWithNewNote(let item, let newNote, let sectionId):
+        let noteRecordInput = SectionItemNoteInputRecord(text: newNote, sectionItemId: item.id)
+        return .SaveSectionItemUpdateWithNewNote(
+          item: item,
+          note: noteRecordInput,
+          sectionId: sectionId
+        )
 
       case .UpdateSectionItemText(let updatedItem, let sectionId):
         guard
@@ -614,6 +627,25 @@ extension ProjectViewModel {
             }
           }
         }
+      case .SaveSectionItemUpdateWithNewNote(let item, let newNote, let sectionId):
+        Task {
+          do {
+            let savedNote = try await db.getWriter().write { [newNote] db in
+              try item.update(db)
+              return try newNote.saved(db)
+            }
+
+            let note = SectionItemNoteRecord(from: savedNote)
+            let sectionItem = SectionItem(record: item, note: note)
+            await MainActor.run {
+              _ = self.handleEvent(.UpdateSectionItemText(item: sectionItem, sectionId: sectionId))
+            }
+          } catch {
+            await MainActor.run {
+              _ = self.handleEvent(.ProjectError(.updateSectionItemText))
+            }
+          }
+        }
 
       case .SaveSectionItemUpdate(let updatedItem, let sectionId):
         Task {
@@ -712,6 +744,11 @@ enum Effect: Equatable {
   case updateSectionName(section: SectionRecord, oldName: String)
   case SaveSectionItem(text: String, note: String?, order: Int64, sectionId: Int64)
   case SaveSectionItemTextUpdate(item: SectionItem, sectionId: Int64)
+  case SaveSectionItemUpdateWithNewNote(
+    item: SectionItemRecord,
+    note: SectionItemNoteInputRecord,
+    sectionId: Int64
+  )
   case SaveSectionItemUpdate(SectionItemRecord, sectionId: Int64)
   case deleteSectionItems(selected: [SectionItem], sectionId: Int64)
   case doNothing

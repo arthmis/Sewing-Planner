@@ -31,12 +31,35 @@ struct UpdateItemView: View {
     let validText = newText.trimmingCharacters(in: .whitespacesAndNewlines)
     let validNoteText = newNoteText.trimmingCharacters(in: .whitespacesAndNewlines)
     let noteText = validNoteText.isEmpty ? nil : validNoteText
-    let updatedSectionItem = data.update(text: validText, noteText: noteText)
-
-    project.send(
-      event: .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId),
-      db: db
-    )
+    if data.note != nil {
+      var updatedSectionItem = data
+      updatedSectionItem.note?.text = validNoteText
+      updatedSectionItem.record.text = validText
+      project.send(
+        event: .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId),
+        db: db
+      )
+    } else {
+      if let note = noteText {
+        var updatedItem = data.record
+        updatedItem.text = validText
+        project.send(
+          event: .StoreUpdatedSectionItemTextWithNewNote(
+            item: updatedItem,
+            newNote: note,
+            sectionId: sectionId
+          ),
+          db: db
+        )
+      } else {
+        var updatedSectionItem = data
+        updatedSectionItem.record.text = validText
+        project.send(
+          event: .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId),
+          db: db
+        )
+      }
+    }
 
     showErrorText = false
     isEditing = false
