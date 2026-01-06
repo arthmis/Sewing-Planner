@@ -358,6 +358,7 @@ extension ProjectViewModel {
           case .updateSectionItemText:
             break
         }
+
       case .StoreSectionItem(let text, let note, let sectionId):
         guard
           let index = self.projectData.sections.firstIndex(where: { section in
@@ -374,6 +375,7 @@ extension ProjectViewModel {
           order: Int64(order),
           sectionId: sectionId
         )
+
       case .AddSectionItem(let item, let sectionId):
         guard
           let index = self.projectData.sections.firstIndex(where: { section in
@@ -384,8 +386,11 @@ extension ProjectViewModel {
           return nil
         }
         self.projectData.sections[index].items.append(item)
+        return nil
+
       case .StoreUpdatedSectionItemText(item: let sectionItem, let sectionId):
         return .SaveSectionItemTextUpdate(item: sectionItem, sectionId: sectionId)
+
       case .UpdateSectionItemText(let updatedItem, let sectionId):
         guard
           let index = self.projectData.sections.firstIndex(where: { section in
@@ -408,6 +413,7 @@ extension ProjectViewModel {
 
         self.projectData.sections[index].items[itemIndex] = updatedItem
         return nil
+
       case .toggleSectionItemCompletionStatus(var updatedItem, let sectionId):
         updatedItem.isComplete.toggle()
         return .SaveSectionItemUpdate(updatedItem, sectionId: sectionId)
@@ -452,6 +458,7 @@ extension ProjectViewModel {
         }
 
         return nil
+
       case .deleteSelectedTasks(let selectedIds, let sectionId):
         guard
           let sectionIndex = self.projectData.sections.firstIndex(where: { section in
@@ -469,6 +476,7 @@ extension ProjectViewModel {
           }
         }
         return .deleteSectionItems(selected: selected, sectionId: sectionId)
+
       case .removeDeletedSectionItems(let deletedIds, let sectionId):
         guard
           let sectionIndex = self.projectData.sections.firstIndex(where: { section in
@@ -551,21 +559,16 @@ extension ProjectViewModel {
         return
       case .SaveSectionItem(let text, let note, let order, let sectionId):
         Task {
-          let sectionItem: SectionItem? = try await db.getWriter().write { db in
-            var recordInput = SectionItemInputRecord(
-              text: text,
-              order: order,
-              sectionId: sectionId
-            )
-            do {
+          do {
+            let sectionItem: SectionItem = try await db.getWriter().write { db in
+              var recordInput = SectionItemInputRecord(
+                text: text,
+                order: order,
+                sectionId: sectionId
+              )
               try recordInput.save(db)
-            } catch {
-              // TODO: log error
-              return nil
-            }
-            let record = SectionItemRecord(from: recordInput)
+              let record = SectionItemRecord(from: recordInput)
 
-            do {
               if let noteText = note {
                 var noteInputRecord = SectionItemNoteInputRecord(
                   text: noteText.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -579,58 +582,78 @@ extension ProjectViewModel {
                 let sectionItem = SectionItem(record: record, note: nil)
                 return sectionItem
               }
-            } catch {
-              // TODO: log error
-              return nil
             }
-          }
 
-          if let sectionItem = sectionItem {
             await MainActor.run {
               _ = self.handleEvent(
                 .AddSectionItem(item: sectionItem, sectionId: sectionId)
               )
             }
+          } catch {
+            await MainActor.run {
+              _ = self.handleEvent(.ProjectError(.addSectionItem))
+            }
           }
         }
         return
+
       case .SaveSectionItemTextUpdate(let item, let sectionId):
         Task {
-          try await db.getWriter().write { db in
-            try item.record.update(db)
-            try item.note?.update(db)
-          }
+          do {
+            try await db.getWriter().write { db in
+              try item.record.update(db)
+              try item.note?.update(db)
+            }
 
-          await MainActor.run {
-            _ = self.handleEvent(.UpdateSectionItemText(item: item, sectionId: sectionId))
+            await MainActor.run {
+              _ = self.handleEvent(.UpdateSectionItemText(item: item, sectionId: sectionId))
+            }
+          } catch {
+            await MainActor.run {
+              _ = self.handleEvent(.ProjectError(.updateSectionItemText))
+            }
           }
         }
+
       case .SaveSectionItemUpdate(let updatedItem, let sectionId):
         Task {
-          try await db.getWriter().write { db in
-            try updatedItem.update(db)
-          }
+          do {
+            try await db.getWriter().write { db in
+              try updatedItem.update(db)
+            }
 
-          await MainActor.run {
-            _ = self.handleEvent(.UpdateSectionItem(item: updatedItem, sectionId: sectionId))
+            await MainActor.run {
+              _ = self.handleEvent(.UpdateSectionItem(item: updatedItem, sectionId: sectionId))
+            }
+          } catch {
+            await MainActor.run {
+              // TODO: give this its own error type, also used in case above this
+              _ = self.handleEvent(.ProjectError(.updateSectionItemText))
+            }
           }
         }
 
       case .deleteSectionItems(let selected, let sectionId):
         Task {
-          let deletedIds = try await db.getWriter().write { db in
-            var deletedIds: Set<Int64> = Set()
-            for item in selected {
-              try item.record.delete(db)
-              deletedIds.insert(item.record.id)
+          do {
+            let deletedIds = try await db.getWriter().write { db in
+              var deletedIds: Set<Int64> = Set()
+              for item in selected {
+                try item.record.delete(db)
+                deletedIds.insert(item.record.id)
+              }
+              return deletedIds
             }
-            return deletedIds
-          }
 
-          await MainActor.run {
-            _ = self.handleEvent(
-              .removeDeletedSectionItems(deletedIds: deletedIds, sectionId: sectionId)
-            )
+            await MainActor.run {
+              _ = self.handleEvent(
+                .removeDeletedSectionItems(deletedIds: deletedIds, sectionId: sectionId)
+              )
+            }
+          } catch {
+            await MainActor.run {
+              _ = self.handleEvent(.ProjectError(.deleteSectionItems))
+            }
           }
         }
     }
