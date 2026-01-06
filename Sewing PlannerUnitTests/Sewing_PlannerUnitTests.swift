@@ -368,4 +368,77 @@ struct Sewing_PlannerUnitTests {
     #expect(!section.selectedItems.contains(item.record.id))
     #expect(section.selectedItems.count == 0)
   }
+
+  @Test("remove deleted section items")
+  @MainActor func testRemoveDeletedSectionItems() {
+    let now = Date.now
+    let sections = [
+      Section(
+        section: SectionRecord(
+          id: 1,
+          projectId: 1,
+          name: "Section 1",
+          isDeleted: false,
+          createDate: now,
+          updateDate: now
+        ),
+        items: [
+          SectionItem(
+            record: SectionItemRecord(
+              from: SectionItemInputRecord(id: 1, text: "second task", order: 0, sectionId: 1)
+            )
+          ),
+          SectionItem(
+            record: SectionItemRecord(
+              from: SectionItemInputRecord(id: 2, text: "second task", order: 1, sectionId: 1)
+            )
+          ),
+          SectionItem(
+            record: SectionItemRecord(
+              from: SectionItemInputRecord(id: 3, text: "third task", order: 2, sectionId: 1)
+            )
+          ),
+        ],
+        id: UUID(),
+
+      ),
+      Section(
+        section: SectionRecord(
+          id: 2,
+          projectId: 1,
+          name: "Section 2",
+          isDeleted: false,
+          createDate: now,
+          updateDate: now
+        ),
+        items: [
+          SectionItem(
+            record: SectionItemRecord(
+              from: SectionItemInputRecord(
+                id: 1,
+                text: "second section second task",
+                order: 0,
+                sectionId: 2
+              )
+            )
+          )
+        ],
+        id: UUID(),
+
+      ),
+    ]
+    let model = initializeProjectViewModel(sections: sections)
+
+    let effect = model.handleEvent(
+      .removeDeletedSectionItems(deletedIds: Set([1, 2]), sectionId: 1)
+    )
+    #expect(effect == nil)
+
+    var section = model.projectData.sections.first(where: { $0.section.id == 1 })!
+    #expect(section.selectedItems.isEmpty)
+    #expect(section.items.count == 1)
+    #expect(section.items[0].record.id == 3)
+    #expect(section.isEditingSection == false)
+    #expect(model.projectData.sections[1].items.count == 1)
+  }
 }
