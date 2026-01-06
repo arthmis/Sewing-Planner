@@ -284,6 +284,8 @@ enum ProjectEvent {
   case toggleSectionItemCompletionStatus(SectionItemRecord, sectionId: Int64)
   case UpdateSectionItem(item: SectionItemRecord, sectionId: Int64)
   case toggleSelectedSectionItem(withId: Int64, fromSectionWithId: Int64)
+  case deleteSelectedTasks(selected: Set<Int64>, sectionId: Int64)
+  case removeDeletedSectionItems(deletedIds: Set<Int64>, sectionId: Int64)
   case AddSectionItem(item: SectionItem, sectionId: Int64)
   case ProjectError(ProjectError)
 }
@@ -450,6 +452,43 @@ extension ProjectViewModel {
         }
 
         return nil
+      case .deleteSelectedTasks(let selectedIds, let sectionId):
+        guard
+          let sectionIndex = self.projectData.sections.firstIndex(where: { section in
+            section.section.id == sectionId
+          })
+        else {
+          // TODO log an error here because this shouldn't be possible
+          // or even panic
+          return nil
+        }
+        var selected: [SectionItem] = []
+        for item in self.projectData.sections[sectionIndex].items {
+          if selectedIds.contains(item.record.id) {
+            selected.append(item)
+          }
+        }
+        return .deleteSectionItems(selected: selected, sectionId: sectionId)
+      case .removeDeletedSectionItems(let deletedIds, let sectionId):
+        guard
+          let sectionIndex = self.projectData.sections.firstIndex(where: { section in
+            section.section.id == sectionId
+          })
+        else {
+          // TODO log an error here because this shouldn't be possible
+          // or even panic
+          return nil
+        }
+        let updatedItems = self.projectData.sections[sectionIndex].items.filter({
+          !deletedIds.contains($0.record.id)
+        })
+        withAnimation(.easeOut(duration: 0.12)) {
+          self.projectData.sections[sectionIndex].items = updatedItems
+          self.projectData.sections[sectionIndex].isEditingSection = false
+          self.projectData.sections[sectionIndex].selectedItems.removeAll()
+        }
+
+        return nil
     }
 
     return nil
@@ -577,6 +616,23 @@ extension ProjectViewModel {
           }
         }
 
+      case .deleteSectionItems(let selected, let sectionId):
+        Task {
+          let deletedIds = try await db.getWriter().write { db in
+            var deletedIds: Set<Int64> = Set()
+            for item in selected {
+              try item.record.delete(db)
+              deletedIds.insert(item.record.id)
+            }
+            return deletedIds
+          }
+
+          await MainActor.run {
+            _ = self.handleEvent(
+              .removeDeletedSectionItems(deletedIds: deletedIds, sectionId: sectionId)
+            )
+          }
+        }
     }
   }
 
@@ -634,6 +690,7 @@ enum Effect: Equatable {
   case SaveSectionItem(text: String, note: String?, order: Int64, sectionId: Int64)
   case SaveSectionItemTextUpdate(item: SectionItem, sectionId: Int64)
   case SaveSectionItemUpdate(SectionItemRecord, sectionId: Int64)
+  case deleteSectionItems(selected: [SectionItem], sectionId: Int64)
   case doNothing
 }
 

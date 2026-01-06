@@ -201,15 +201,10 @@ struct SectionView: View {
       isPresented: $showDeleteItemsDialog
     ) {
       Button("Delete", role: .destructive) {
-        do {
-          try model.deleteSelectedItems(db: db)
-          withAnimation(.easeOut(duration: 0.2)) {
-            model.isEditingSection = false
-            model.selectedItems.removeAll()
-          }
-        } catch {
-          project.handleError(error: .deleteSectionItems)
-        }
+        project.send(
+          event: .deleteSelectedTasks(selected: model.selectedItems, sectionId: model.section.id),
+          db: db
+        )
       }
       Button("Cancel", role: .cancel) {
         showDeleteItemsDialog = false
