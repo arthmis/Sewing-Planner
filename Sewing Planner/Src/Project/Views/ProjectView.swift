@@ -314,7 +314,7 @@ extension ProjectViewModel {
           createDate: now,
           updateDate: now
         )
-        return .AddNewSection(section: sectionInput, projectId: projectId)
+        return .AddNewSection(section: sectionInput)
 
       case .AddSectionToState(let sectionRecord):
         let section = Section(id: UUID(), name: sectionRecord)
@@ -546,7 +546,7 @@ extension ProjectViewModel {
     }
 
     switch effect {
-      case .AddNewSection(let sectionInput, let projectId):
+      case .AddNewSection(let sectionInput):
         Task {
           do {
             let record = try await db.getWriter().write { [sectionInput] db in
@@ -777,7 +777,7 @@ extension ProjectViewModel {
 }
 
 enum Effect: Equatable {
-  case AddNewSection(section: SectionInputRecord, projectId: Int64)
+  case AddNewSection(section: SectionInputRecord)
   case deleteSection(section: SectionRecord)
   case updateProjectTitle(projectData: ProjectMetadata)
   case updateSectionName(section: SectionRecord, oldName: String)
