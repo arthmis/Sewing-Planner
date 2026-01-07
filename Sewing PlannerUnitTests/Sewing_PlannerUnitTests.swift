@@ -211,28 +211,27 @@ struct Sewing_PlannerUnitTests {
 
   }
 
-  // @Test("Test initiate update section item text")
-  // @MainActor func testInitiateStoreUpdatedSectionItemText() {
-  //   let model = initializeProjectViewModel()
+  @Test("Test initiate update section item text")
+  @MainActor func testInitiateStoreUpdatedSectionItemText() {
+    let model = initializeProjectViewModel()
 
-  //   let updatedSectionTextRecord = SectionItemRecord(
-  //     from: SectionItemInputRecord(id: 1, text: "new test", order: 0, sectionId: 1)
-  //   )
-  //   let updatedSectionItem = SectionItem(record: updatedSectionTextRecord)
-  //   let effect = model.handleEvent(
-  //     .StoreUpdatedSectionItemText(
-  //       item: updatedSectionItem,
-  //       sectionId: 1
-  //     )
-  //   )
+    let updatedSectionTextRecord = SectionItemRecord(
+      from: SectionItemInputRecord(id: 1, text: "new test", order: 0, sectionId: 1)
+    )
+    let updatedSectionItem = SectionItem(record: updatedSectionTextRecord)
+    let effect = model.handleEvent(
+      .StoreUpdatedSectionItemText(
+        item: updatedSectionItem,
+        sectionId: 1
+      )
+    )
 
-  //   let expectedEffect: Effect = .SaveSectionItemUpdate(
-  //     item: updatedSectionItem.record,
-  //     note: updatedSectionItem.note,
-  //     sectionId: 1
-  //   )
-  //   #expect(effect == expectedEffect)
-  // }
+    let expectedEffect: Effect = .SaveSectionItemTextUpdate(
+      item: updatedSectionItem,
+      sectionId: 1
+    )
+    #expect(effect == expectedEffect)
+  }
 
   @Test("Test update section item text in state")
   @MainActor func testUpdateSectionItemText() {
