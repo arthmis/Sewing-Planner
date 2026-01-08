@@ -515,7 +515,7 @@ struct Sewing_PlannerUnitTests {
     let model = initializeProjectViewModel(images: images)
 
     let effect = model.handleEvent(
-      .ShowDeleteImagesView(initialSelectedImage: imagePath)
+      .ShowDeleteImagesView(initialSelectedImageId: 1)
     )
     #expect(effect == nil)
 
