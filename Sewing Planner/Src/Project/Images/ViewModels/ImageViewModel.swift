@@ -15,7 +15,7 @@ class ProjectImages {
   var images: [ProjectImage] = []
   var deletedImages: [ProjectImage] = []
 
-  var selectedImages: Set<String?> = []
+  var selectedImages: Set<Int64> = []
   var overlayedImage: OverlayedImage?
   var pickerItem: PhotosPickerItem?
   var photosAppSelectedImage: Data?
@@ -119,8 +119,8 @@ class ProjectImages {
       return
     }
 
-    for imagePath in selectedImages {
-      if let index = images.firstIndex(where: { $0.path == imagePath }) {
+    for imageId in selectedImages {
+      if let index = images.firstIndex(where: { $0.record.id == imageId }) {
         let image = images.remove(at: index)
         deletedImages.append(image)
       }

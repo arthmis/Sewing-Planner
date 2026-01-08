@@ -89,13 +89,15 @@ struct ImageButton: View {
 }
 
 struct SelectedImageButton: View {
+  @Environment(\.db) private var db
+  @Environment(ProjectViewModel.self) private var project
   @State var isHovering = false
   @Binding var image: ProjectImage
-  @Binding var selectedImagesForDeletion: Set<String?>
+  @Binding var selectedImagesForDeletion: Set<Int64>
   @State var isPressed = false
 
   var isSelectedForDeletion: Bool {
-    selectedImagesForDeletion.contains(image.path)
+    selectedImagesForDeletion.contains(image.record.id)
   }
 
   var body: some View {
@@ -127,11 +129,7 @@ struct SelectedImageButton: View {
           }
         }
         .onTapGesture {
-          if !isSelectedForDeletion {
-            selectedImagesForDeletion.insert(image.path)
-          } else {
-            selectedImagesForDeletion.remove(image.path)
-          }
+          project.send(event: .ToggleImageSelection(imageId: image.record.id), db: db)
         }
         .onPress {
           isPressed = true

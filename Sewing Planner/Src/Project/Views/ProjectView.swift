@@ -293,9 +293,10 @@ enum ProjectEvent {
   case AddSectionItem(item: SectionItem, sectionId: Int64)
   case HandleImagePicker(photoPicker: PhotosPickerItem?)
   case AddImage(projectImage: ProjectImage)
-  case ShowDeleteImagesView(initialSelectedImage: String)
+  case ShowDeleteImagesView(initialSelectedImageId: Int64)
   case DeleteImages
   case CancelImageDeletionView
+  case ToggleImageSelection(imageId: Int64)
   case ProjectError(ProjectError)
 }
 
@@ -551,8 +552,8 @@ extension ProjectViewModel {
           return nil
         }
 
-        for imagePath in self.projectImages.selectedImages {
-          if let index = self.projectImages.images.firstIndex(where: { $0.path == imagePath }) {
+        for imageId in self.projectImages.selectedImages {
+          if let index = self.projectImages.images.firstIndex(where: { $0.record.id == imageId }) {
             let image = self.projectImages.images.remove(at: index)
             self.projectImages.deletedImages.append(image)
           }
@@ -564,6 +565,12 @@ extension ProjectViewModel {
         self.projectImages.deletedImages.removeAll()
 
         return nil
+      case .ToggleImageSelection(let imageId):
+        if !self.projectImages.selectedImages.contains(imageId) {
+          self.projectImages.selectedImages.insert(imageId)
+        } else {
+          self.projectImages.selectedImages.remove(imageId)
+        }
     }
 
     return nil

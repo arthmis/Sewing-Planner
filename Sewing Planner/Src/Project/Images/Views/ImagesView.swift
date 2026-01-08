@@ -66,7 +66,7 @@ struct ImagesView: View {
                 ImageButton(image: image, selectedImage: $model.overlayedImage)
                   .onLongPressGesture {
                     project.send(
-                      event: .ShowDeleteImagesView(initialSelectedImage: image.path),
+                      event: .ShowDeleteImagesView(initialSelectedImageId: image.record.id),
                       db: db
                     )
                   }
