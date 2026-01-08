@@ -65,8 +65,10 @@ struct ImagesView: View {
               if !model.isInDeleteMode {
                 ImageButton(image: image, selectedImage: $model.overlayedImage)
                   .onLongPressGesture {
-                    model.didSetDeleteMode()
-                    model.selectedImages.insert(image.path)
+                    project.send(
+                      event: .ShowDeleteImagesView(initialSelectedImage: image.path),
+                      db: db
+                    )
                   }
                   .matchedTransitionSource(id: image.path, in: transitionNamespace)
               } else {
@@ -157,6 +159,7 @@ struct EmptyProjectImagesCallToActionView: View {
       .font(.system(size: 16))
       .padding(.top, 8)
       Button("Add photos") {
+        // TODO use an event for this instead
         project.showPhotoPickerView()
       }
       .buttonStyle(PrimaryButtonStyle(fontSize: 16))

@@ -7,12 +7,15 @@
 
 import Foundation
 import Testing
+import UIKit
 
 @testable import Sewing_Planner
 
 struct Sewing_PlannerUnitTests {
-  @MainActor private func initializeProjectViewModel(sections: [Section]? = nil) -> ProjectViewModel
-  {
+  @MainActor private func initializeProjectViewModel(
+    sections: [Section]? = nil,
+    images: ProjectImages? = nil
+  ) -> ProjectViewModel {
     let now = Date()
     let sections =
       sections ?? [
@@ -41,10 +44,12 @@ struct Sewing_PlannerUnitTests {
       projectSections: sections
     )
 
-    let projectImages = ProjectImages(
-      projectId: projectMetadata.id,
-      images: []
-    )
+    let projectImages =
+      images
+      ?? ProjectImages(
+        projectId: projectMetadata.id,
+        images: []
+      )
 
     let model = ProjectViewModel(
       data: projectData,
@@ -482,5 +487,39 @@ struct Sewing_PlannerUnitTests {
     #expect(section.items[0].record.id == 3)
     #expect(section.isEditingSection == false)
     #expect(model.projectData.sections[1].items.count == 1)
+  }
+
+  @Test("show delete images view")
+  @MainActor func testShowDeleteImagesView() {
+    let now = Date.now
+    let imagePath = "/some/file/path"
+    let images = ProjectImages(
+      projectId: 1,
+      images: [
+        ProjectImage(
+          record: ProjectImageRecord(
+            from: ProjectImageRecordInput(
+              id: 1,
+              projectId: 1,
+              filePath: imagePath,
+              thumbnail: "/cache/some/file/path",
+              isDeleted: false,
+              createDate: now,
+              updateDate: now,
+            )
+          ),
+          path: imagePath
+        )
+      ]
+    )
+    let model = initializeProjectViewModel(images: images)
+
+    let effect = model.handleEvent(
+      .ShowDeleteImagesView(initialSelectedImage: imagePath)
+    )
+    #expect(effect == nil)
+
+    #expect(model.projectImages.inDeleteMode == true)
+    #expect(model.projectImages.selectedImages.count == 1)
   }
 }

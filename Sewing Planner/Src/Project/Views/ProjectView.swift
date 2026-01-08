@@ -294,6 +294,7 @@ enum ProjectEvent {
   case AddSectionItem(item: SectionItem, sectionId: Int64)
   case HandleImagePicker(photoPicker: PhotosPickerItem?)
   case AddImage(projectImage: ProjectImage)
+  case ShowDeleteImagesView(initialSelectedImage: String)
   case ProjectError(ProjectError)
 }
 
@@ -537,6 +538,11 @@ extension ProjectViewModel {
         self.projectImages.images.append(projectImage)
         return nil
 
+      case .ShowDeleteImagesView(let initialSelectedImagePath):
+        self.projectImages.setDeleteMode(true)
+        self.projectImages.selectedImages.insert(initialSelectedImagePath)
+
+        return nil
     }
 
     return nil

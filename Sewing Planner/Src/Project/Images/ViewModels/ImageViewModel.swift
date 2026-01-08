@@ -135,8 +135,8 @@ class ProjectImages {
     selectedImages = Set()
   }
 
-  func didSetDeleteMode() {
-    inDeleteMode = true
+  func setDeleteMode(_ mode: Bool) {
+    inDeleteMode = mode
   }
 
   func exitOverlayedImageView() {
