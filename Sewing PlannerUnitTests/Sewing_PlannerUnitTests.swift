@@ -618,4 +618,73 @@ struct Sewing_PlannerUnitTests {
     #expect(model.projectImages.selectedImages.contains(2))
     #expect(!model.projectImages.selectedImages.contains(1))
   }
+
+  @Test("test delete selected images")
+  @MainActor func testDeleteSelectedImages() {
+    let now = Date.now
+    let imagePath = "/some/file/path"
+    let otherImagePath = "/someOther/file/path"
+    let images = [
+      ProjectImage(
+        record: ProjectImageRecord(
+          from: ProjectImageRecordInput(
+            id: 1,
+            projectId: 1,
+            filePath: imagePath,
+            thumbnail: "/cache/some/file/path",
+            isDeleted: false,
+            createDate: now,
+            updateDate: now,
+          )
+        ),
+        path: imagePath,
+        image: UIImage(ciImage: .empty())
+      ),
+      ProjectImage(
+        record: ProjectImageRecord(
+          from: ProjectImageRecordInput(
+            id: 2,
+            projectId: 1,
+            filePath: otherImagePath,
+            thumbnail: "/cache/some/file/path",
+            isDeleted: false,
+            createDate: now,
+            updateDate: now,
+          )
+        ),
+        path: imagePath,
+        image: UIImage(ciImage: .empty())
+      ),
+    ]
+    let selectedImages: Set<Int64> = Set([1])
+    let projectImages = ProjectImages(
+      projectId: 1,
+      images: images,
+      selectedImages: selectedImages
+    )
+    let model = initializeProjectViewModel(images: projectImages)
+
+    let effect = model.handleEvent(.DeleteImages)
+    let selectedImage = [
+      ProjectImage(
+        record: ProjectImageRecord(
+          from: ProjectImageRecordInput(
+            id: 1,
+            projectId: 1,
+            filePath: imagePath,
+            thumbnail: "/cache/some/file/path",
+            isDeleted: false,
+            createDate: now,
+            updateDate: now,
+          )
+        ),
+        path: imagePath,
+        image: UIImage(ciImage: .empty())
+      )
+    ]
+    let expectedEffect = Effect.DeleteImages(selectedImage, projectId: 1)
+
+    #expect(effect == expectedEffect)
+
+  }
 }

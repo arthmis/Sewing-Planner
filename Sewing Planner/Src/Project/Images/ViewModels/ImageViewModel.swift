@@ -25,9 +25,10 @@ class ProjectImages {
     self.projectId = projectId
   }
 
-  init(projectId: Int64, images: [ProjectImage]) {
+  init(projectId: Int64, images: [ProjectImage], selectedImages: Set<Int64>? = nil) {
     self.projectId = projectId
     self.images = images
+    self.selectedImages = selectedImages ?? []
   }
 
   static func getImages(with id: Int64, from db: AppDatabase) throws -> ProjectImages {

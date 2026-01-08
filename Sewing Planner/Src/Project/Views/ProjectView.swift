@@ -547,6 +547,7 @@ extension ProjectViewModel {
         self.projectImages.selectedImages.insert(initialSelectedImagePath)
 
         return nil
+
       case .DeleteImages:
         if self.projectImages.selectedImagesIsEmpty {
           return nil
