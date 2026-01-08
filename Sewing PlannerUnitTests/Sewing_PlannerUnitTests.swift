@@ -522,4 +522,34 @@ struct Sewing_PlannerUnitTests {
     #expect(model.projectImages.inDeleteMode == true)
     #expect(model.projectImages.selectedImages.count == 1)
   }
+
+  @Test("add image")
+  @MainActor func testAddImage() {
+    let now = Date.now
+    let imagePath = "/some/file/path"
+    let projectImage =
+      ProjectImage(
+        record: ProjectImageRecord(
+          from: ProjectImageRecordInput(
+            id: 1,
+            projectId: 1,
+            filePath: imagePath,
+            thumbnail: "/cache/some/file/path",
+            isDeleted: false,
+            createDate: now,
+            updateDate: now,
+          )
+        ),
+        path: imagePath,
+        image: UIImage(ciImage: .empty())
+      )
+    let model = initializeProjectViewModel()
+
+    let effect = model.handleEvent(
+      .AddImage(projectImage: projectImage)
+    )
+    #expect(effect == nil)
+
+    #expect(model.projectImages.images.count == 1)
+  }
 }
