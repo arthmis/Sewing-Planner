@@ -105,10 +105,6 @@ class ProjectImages {
     deletedImages.removeAll()
   }
 
-  var isInDeleteMode: Bool {
-    inDeleteMode
-  }
-
   var selectedImagesIsEmpty: Bool {
     selectedImages.isEmpty
   }

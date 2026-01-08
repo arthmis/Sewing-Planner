@@ -199,7 +199,6 @@ final class ProjectViewModel {
   var projectData: ProjectData
   var projectsNavigation: [ProjectMetadata]
   var projectImages: ProjectImages
-  var deletedImages: [ProjectImage] = []
   var currentView = CurrentView.details
   var name = ""
   var showAddTextboxPopup = false
@@ -295,6 +294,8 @@ enum ProjectEvent {
   case HandleImagePicker(photoPicker: PhotosPickerItem?)
   case AddImage(projectImage: ProjectImage)
   case ShowDeleteImagesView(initialSelectedImage: String)
+  case DeleteImages
+  case CancelImageDeletionView
   case ProjectError(ProjectError)
 }
 
@@ -350,6 +351,8 @@ extension ProjectViewModel {
           case .addSectionItem:
             break
           case .deleteImages:
+            self.projectImages.cancelDeleteMode()
+            self.handleError(error: error)
             break
           case .deleteSection(let section):
             if let index = self.projectData.sections.firstIndex(where: {
@@ -541,6 +544,24 @@ extension ProjectViewModel {
       case .ShowDeleteImagesView(let initialSelectedImagePath):
         self.projectImages.setDeleteMode(true)
         self.projectImages.selectedImages.insert(initialSelectedImagePath)
+
+        return nil
+      case .DeleteImages:
+        if self.projectImages.selectedImagesIsEmpty {
+          return nil
+        }
+
+        for imagePath in self.projectImages.selectedImages {
+          if let index = self.projectImages.images.firstIndex(where: { $0.path == imagePath }) {
+            let image = self.projectImages.images.remove(at: index)
+            self.projectImages.deletedImages.append(image)
+          }
+        }
+        return .DeleteImages(self.projectImages.deletedImages, projectId: self.projectData.data.id)
+
+      case .CancelImageDeletionView:
+        self.projectImages.cancelDeleteMode()
+        self.projectImages.deletedImages.removeAll()
 
         return nil
     }
@@ -806,6 +827,24 @@ extension ProjectViewModel {
             }
           }
         }
+      case .DeleteImages(let deletedImages, let projectId):
+        Task {
+          do {
+            try await db.getWriter().write { [deletedImages] db in
+              for image in deletedImages {
+                try AppFiles().deleteImage(projectId: projectId, image: image)
+                try image.record.delete(db)
+              }
+            }
+            await MainActor.run {
+              _ = self.handleEvent(.CancelImageDeletionView)
+            }
+          } catch {
+            await MainActor.run {
+              _ = self.handleEvent(.ProjectError(.deleteImages))
+            }
+          }
+        }
     }
   }
 
@@ -871,6 +910,7 @@ enum Effect: Equatable {
   case SaveSectionItemUpdate(SectionItemRecord, sectionId: Int64)
   case deleteSectionItems(selected: [SectionItem], sectionId: Int64)
   case HandleImagePicker(photoPicker: PhotosPickerItem?, projectId: Int64)
+  case DeleteImages([ProjectImage], projectId: Int64)
   case doNothing
 }
 

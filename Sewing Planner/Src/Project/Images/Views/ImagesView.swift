@@ -27,7 +27,7 @@ struct ImagesView: View {
   var body: some View {
     VStack(alignment: .center) {
       HStack {
-        if model.isInDeleteMode {
+        if model.inDeleteMode {
           HStack(alignment: .center) {
             Button("Cancel", action: model.cancelDeleteMode)
               .buttonStyle(SecondaryButtonStyle())
@@ -62,7 +62,7 @@ struct ImagesView: View {
             spacing: 4
           ) {
             ForEach($model.images, id: \.self.path) { $image in
-              if !model.isInDeleteMode {
+              if !model.inDeleteMode {
                 ImageButton(image: image, selectedImage: $model.overlayedImage)
                   .onLongPressGesture {
                     project.send(
@@ -88,11 +88,7 @@ struct ImagesView: View {
       isPresented: $showDeleteImagesDialog
     ) {
       Button("Delete", role: .destructive) {
-        do {
-          try model.handleDeleteImage(db: db)
-        } catch {
-          project.handleError(error: .deleteImages)
-        }
+        project.send(event: .DeleteImages, db: db)
       }
       Button("Cancel", role: .cancel) {
         showDeleteImagesDialog = false
@@ -128,7 +124,7 @@ struct ImagesView: View {
           .navigationTransition(.zoom(sourceID: item.id, in: transitionNamespace))
       }
     }
-    .animation(.easeOut(duration: 0.1), value: model.isInDeleteMode)
+    .animation(.easeOut(duration: 0.1), value: model.inDeleteMode)
     .animation(.easeOut(duration: 0.1), value: model.overlayedImage)
     .task {
       do {
