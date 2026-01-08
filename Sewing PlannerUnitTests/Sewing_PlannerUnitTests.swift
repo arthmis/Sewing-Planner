@@ -552,4 +552,70 @@ struct Sewing_PlannerUnitTests {
 
     #expect(model.projectImages.images.count == 1)
   }
+
+  @Test("test toggle select for image deletion")
+  @MainActor func testToggleSelectImageForDeletion() {
+    let now = Date.now
+    let imagePath = "/some/file/path"
+    let otherImagePath = "/someOther/file/path"
+    let images = ProjectImages(
+      projectId: 1,
+      images: [
+        ProjectImage(
+          record: ProjectImageRecord(
+            from: ProjectImageRecordInput(
+              id: 1,
+              projectId: 1,
+              filePath: imagePath,
+              thumbnail: "/cache/some/file/path",
+              isDeleted: false,
+              createDate: now,
+              updateDate: now,
+            )
+          ),
+          path: imagePath,
+          image: UIImage(ciImage: .empty())
+        ),
+        ProjectImage(
+          record: ProjectImageRecord(
+            from: ProjectImageRecordInput(
+              id: 2,
+              projectId: 1,
+              filePath: otherImagePath,
+              thumbnail: "/cache/some/file/path",
+              isDeleted: false,
+              createDate: now,
+              updateDate: now,
+            )
+          ),
+          path: imagePath,
+          image: UIImage(ciImage: .empty())
+        ),
+      ]
+    )
+    let model = initializeProjectViewModel(images: images)
+
+    let effect = model.handleEvent(
+      .ToggleImageSelection(imageId: 1)
+    )
+    #expect(effect == nil)
+
+    #expect(model.projectImages.selectedImages.count == 1)
+    #expect(model.projectImages.selectedImages.contains(1))
+    #expect(!model.projectImages.selectedImages.contains(2))
+
+    _ = model.handleEvent(
+      .ToggleImageSelection(imageId: 2)
+    )
+    #expect(model.projectImages.selectedImages.count == 2)
+    #expect(model.projectImages.selectedImages.contains(2))
+    #expect(model.projectImages.selectedImages.contains(1))
+
+    _ = model.handleEvent(
+      .ToggleImageSelection(imageId: 1)
+    )
+    #expect(model.projectImages.selectedImages.count == 1)
+    #expect(model.projectImages.selectedImages.contains(2))
+    #expect(!model.projectImages.selectedImages.contains(1))
+  }
 }
