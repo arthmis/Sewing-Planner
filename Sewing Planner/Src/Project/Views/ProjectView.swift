@@ -135,9 +135,7 @@ struct ProjectView: View {
               matching: .images
             )
             .onChange(of: project.pickerItem) {
-              Task { @MainActor in
-                await project.handleOnChangePickerItem(db: db)
-              }
+              project.send(event: .HandleImagePicker(photoPicker: project.pickerItem), db: db)
             }
           }
         }
@@ -294,6 +292,8 @@ enum ProjectEvent {
   case deleteSelectedTasks(selected: Set<Int64>, sectionId: Int64)
   case removeDeletedSectionItems(deletedIds: Set<Int64>, sectionId: Int64)
   case AddSectionItem(item: SectionItem, sectionId: Int64)
+  case HandleImagePicker(photoPicker: PhotosPickerItem?)
+  case AddImage(projectImage: ProjectImage)
   case ProjectError(ProjectError)
 }
 
@@ -528,8 +528,15 @@ extension ProjectViewModel {
           self.projectData.sections[sectionIndex].isEditingSection = false
           self.projectData.sections[sectionIndex].selectedItems.removeAll()
         }
-
         return nil
+
+      case .HandleImagePicker(let photoPicker):
+        return .HandleImagePicker(photoPicker: photoPicker, projectId: self.projectData.data.id)
+
+      case .AddImage(let projectImage):
+        self.projectImages.images.append(projectImage)
+        return nil
+
     }
 
     return nil
@@ -726,6 +733,73 @@ extension ProjectViewModel {
             }
           }
         }
+      case .HandleImagePicker(let photoPicker, let projectId):
+        Task {
+          guard let photoPicker = photoPicker else {
+            return
+          }
+
+          do {
+            let result = try await photoPicker.loadTransferable(type: Data.self)
+            switch result {
+              case .some(let files):
+                // show a better error if this fails, shouldn't happen though
+                guard let img = UIImage(data: files) else {
+                  await MainActor.run {
+                    _ = self.handleEvent(.ProjectError(.importImage))
+                  }
+                  return
+                }
+                // TODO: potential performance problem here, look into scaling the images in a background task
+                let resizedImage = img.scaleToAppImageMaxDimension()
+                let projectImage = ProjectImageInput(image: resizedImage)
+
+                let images = [projectImage]
+                for image in images {
+                  let projectImage: ProjectImage? = try await db.getWriter().write { db in
+                    do {
+                      let (imagePath, thumbnailPath) = try AppFiles().saveProjectImage(
+                        projectId: projectId,
+                        image: image
+                      )!
+
+                      let now = Date.now
+                      var input = ProjectImageRecordInput(
+                        id: nil,
+                        projectId: projectId,
+                        filePath: imagePath,
+                        thumbnail: thumbnailPath,
+                        isDeleted: false,
+                        createDate: now,
+                        updateDate: now
+                      )
+                      try input.save(db)
+                      let record = ProjectImageRecord(from: consume input)
+                      let projectImage = ProjectImage(
+                        record: consume record,
+                        path: imagePath,
+                        image: image.image
+                      )
+
+                      return projectImage
+                    } catch {
+                      // TODO: put this error in an error array and log it and show to user if it makes sense
+                      return nil
+                    }
+                  }
+                  if let projectImage = projectImage {
+                    await MainActor.run {
+                      _ = self.handleEvent(.AddImage(projectImage: projectImage))
+                    }
+                  }
+                }
+              case .none:
+                await MainActor.run {
+                  _ = self.handleEvent(.ProjectError(.importImage))
+                }
+            }
+          }
+        }
     }
   }
 
@@ -790,6 +864,7 @@ enum Effect: Equatable {
   )
   case SaveSectionItemUpdate(SectionItemRecord, sectionId: Int64)
   case deleteSectionItems(selected: [SectionItem], sectionId: Int64)
+  case HandleImagePicker(photoPicker: PhotosPickerItem?, projectId: Int64)
   case doNothing
 }
 
