@@ -286,7 +286,7 @@ extension ProjectViewModel {
               }
             }
             await MainActor.run {
-              _ = self.handleEvent(.CancelImageDeletionView)
+              _ = self.handleEvent(.CompleteImageDeletion)
             }
           } catch {
             await MainActor.run {

@@ -28,24 +28,10 @@ struct ImagesView: View {
     VStack(alignment: .center) {
       HStack {
         if model.inDeleteMode {
-          HStack(alignment: .center) {
-            Button("Cancel", action: model.cancelDeleteMode)
-              .buttonStyle(SecondaryButtonStyle())
-            Spacer()
-            Button {
-              showDeleteImagesDialog = true
-            } label: {
-              HStack {
-                Text("Delete")
-                Image(systemName: "trash")
-                  .font(.system(size: 20, weight: Font.Weight.medium))
-                  .foregroundStyle(Color.white)
-              }
-            }
-            .disabled(model.selectedImagesIsEmpty)
-            .buttonStyle(DeleteButtonStyle())
-          }
-          .padding(.top, 16)
+          InlineImagesDeleteDialogView(
+            deleteDisabled: model.selectedImagesIsEmpty,
+            showDeleteImagesDialog: $showDeleteImagesDialog
+          )
         }
       }
       .frame(maxWidth: .infinity)

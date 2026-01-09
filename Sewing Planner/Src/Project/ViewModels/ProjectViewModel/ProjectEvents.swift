@@ -27,7 +27,8 @@ enum ProjectEvent {
   case AddImage(projectImage: ProjectImage)
   case ShowDeleteImagesView(initialSelectedImageId: Int64)
   case DeleteImages
-  case CancelImageDeletionView
+  case CompleteImageDeletion
+  case CancelImageDeletion
   case ToggleImageSelection(imageId: Int64)
   case ProjectError(ProjectError)
 }
@@ -293,11 +294,15 @@ extension ProjectViewModel {
         }
         return .DeleteImages(self.projectImages.deletedImages, projectId: self.projectData.data.id)
 
-      case .CancelImageDeletionView:
+      case .CompleteImageDeletion:
         self.projectImages.cancelDeleteMode()
         self.projectImages.deletedImages.removeAll()
-
         return nil
+
+      case .CancelImageDeletion:
+        self.projectImages.cancelDeleteMode()
+        return nil
+
       case .ToggleImageSelection(let imageId):
         if !self.projectImages.selectedImages.contains(imageId) {
           self.projectImages.selectedImages.insert(imageId)
