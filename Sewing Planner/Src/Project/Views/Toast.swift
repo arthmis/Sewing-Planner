@@ -14,30 +14,30 @@ struct Toast: View {
     if let error = showToast {
       let message =
         switch error {
-        case .addSection:
-          "Couldn't add a new section."
-        case .addSectionItem:
-          "Couldn't add an item to the section."
-        case .deleteImages:
-          "Couldn't delete images."
-        case .deleteSection:
-          "Couldn't delete the section."
-        case .deleteSectionItems:
-          "Couldn't delete selected items."
-        case .importImage:
-          "Couldn't save imported image."
-        case .loadImages:
-          "Couldn't load project images."
-        case .reOrderSectionItems:
-          "Couldn't reorder section items."
-        case .renameProject:
-          "Couldn't rename project."
-        case .updateSectionItemText:
-          "Couldn't update item text."
-        case .updateSectionItemCompletion:
-          "Couldn't update item completion."
-        default:
-          "Something went wrong. Please try again."
+          case .addSection:
+            "Couldn't add a new section."
+          case .addSectionItem:
+            "Couldn't add an item to the section."
+          case .deleteImages:
+            "Couldn't delete images."
+          case .deleteSection:
+            "Couldn't delete the section."
+          case .deleteSectionItems:
+            "Couldn't delete selected items."
+          case .importImage:
+            "Couldn't save imported image."
+          case .loadImages:
+            "Couldn't load project images."
+          case .reOrderSectionItems:
+            "Couldn't reorder section items."
+          case .renameProject:
+            "Couldn't rename project."
+          case .updateSectionItemText:
+            "Couldn't update item text."
+          case .updateSectionItemCompletion:
+            "Couldn't update item completion."
+          default:
+            "Something went wrong. Please try again."
         }
 
       HStack {
@@ -64,7 +64,9 @@ struct Toast: View {
             // TODO: look into more gradients to create pastel/glassy look
             LinearGradient(
               colors: [Color(hex: 0xE62020, opacity: 1), Color(hex: 0xF40009, opacity: 1)],
-              startPoint: .leading, endPoint: .trailing)
+              startPoint: .leading,
+              endPoint: .trailing
+            )
           )
           .shadow(radius: 3, x: 0, y: 4)
       )
@@ -87,7 +89,7 @@ struct Toast: View {
     Button("Toggle Toast") {
       showToast = .addSection
     }
-  Toast(showToast: $showToast)
+    Toast(showToast: $showToast)
   }
   .frame(width: 500, height: 500)
   .background(.white)
