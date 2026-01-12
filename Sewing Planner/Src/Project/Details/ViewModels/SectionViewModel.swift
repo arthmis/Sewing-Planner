@@ -46,8 +46,6 @@ class Section {
     }
   }
 
-
-
   func addItem(text: String, note: String?, db: AppDatabase) throws {
     try db.getWriter().write { db in
       // TODO: do this in a transaction or see if the write is already a transaction

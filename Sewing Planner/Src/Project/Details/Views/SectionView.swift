@@ -8,138 +8,18 @@
 import SwiftUI
 
 struct SectionView: View {
-  @Binding var model: Section
   @Environment(ProjectViewModel.self) var project
+  @Binding var model: Section
   let db: AppDatabase
-  @State private var isEditingSectionName = false
-  @State private var bindedName: String = ""
-  @State private var validationError = ""
-  @State private var size: CGFloat = 0
   @State private var showDeleteItemsDialog = false
-
-  private func sanitize(_ val: String) -> String {
-    return val.trimmingCharacters(in: .whitespacesAndNewlines)
-  }
-
-  private func saveNewName() {
-    let sanitizedName = sanitize(bindedName)
-    guard !sanitizedName.isEmpty else {
-      validationError = "Section name can't be empty."
-      return
-    }
-
-    var section = model.section
-    section.name = sanitizedName
-    project.send(
-      event: .UpdateSectionName(section: section, oldName: model.section.name),
-      db: db
-    )
-
-    isEditingSectionName = false
-    validationError = ""
-  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
-      HStack {
-        Text(model.section.name)
-          .font(.custom("SourceSans3-Medium", size: 16))
-          .frame(maxWidth: .infinity, maxHeight: 30, alignment: .leading)
-          .contentShape(Rectangle())
-          .onTapGesture {
-            if !isEditingSectionName && !model.isEditingSection {
-              bindedName = model.section.name
-              isEditingSectionName = true
-            }
-          }
-          .sheet(isPresented: $isEditingSectionName) {
-            validationError = ""
-          } content: {
-            VStack {
-              HStack {
-                Spacer()
-                Button {
-                  isEditingSectionName = false
-                } label: {
-                  Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.gray)
-                }
-              }
-              TextField("Section Name", text: $bindedName)
-                .onSubmit {
-                  saveNewName()
-                }
-                .textFieldStyle(.automatic)
-                .padding(.vertical, 12)
-                .font(.custom("SourceSans3-Medium", size: 16))
-                .overlay(
-                  Rectangle()
-                    .frame(maxWidth: .infinity, maxHeight: 1)
-                    .foregroundStyle(Color.gray.opacity(0.5)),
-                  alignment: .bottom
-                )
-              HStack {
-                Text(validationError)
-                  .foregroundStyle(.red)
-                  .padding(.top, 2)
-                Spacer()
-              }
-              .transition(.move(edge: .top))
-
-              Button("Save") {
-                withAnimation(.easeOut(duration: 0.13)) {
-                  saveNewName()
-                }
-              }
-              .buttonStyle(SheetPrimaryButtonStyle())
-              .font(.system(size: 20))
-              .padding(.top, 16)
-            }
-            .padding(12)
-            .onGeometryChange(for: CGFloat.self) { proxy in
-              proxy.size.height
-            } action: { newValue in
-              withAnimation(.easeOut(duration: 0.15)) {
-                size = newValue
-              }
-            }
-            .presentationDetents([.height(size)])
-          }
-
-        if model.isEditingSection {
-          HStack {
-            Button("Cancel") {
-              withAnimation(.smooth(duration: 0.2)) {
-                model.isEditingSection = false
-                model.selectedItems.removeAll()
-              }
-            }
-            Button {
-              showDeleteItemsDialog = true
-            } label: {
-              Image(systemName: "trash")
-                .foregroundStyle(Color.red)
-                .padding(.horizontal, 8)
-            }
-            .disabled(!model.hasSelections)
-          }
-        }
-
-        Menu {
-          Button("Delete") {
-            project.showDeleteSectionConfirmationDialog(section: model.section)
-          }
-          Button("Delete Items") {
-            model.isEditingSection = true
-          }
-        } label: {
-          Image(systemName: "ellipsis")
-            .font(.system(size: 24))
-        }
-        .padding(.trailing, 16)
-        .padding(.vertical, 8)
-      }
+      SectionTitleView(
+        model: $model,
+        db: db,
+        showDeleteItemsDialog: $showDeleteItemsDialog,
+      )
       .overlay(
         Divider()
           .frame(maxWidth: .infinity, maxHeight: 1)
