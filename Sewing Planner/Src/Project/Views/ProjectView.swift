@@ -43,29 +43,31 @@ struct ProjectView: View {
         }
       }.toolbar {
         ToolbarItem(placement: .primaryAction) {
-          if project.currentView == CurrentView.details {
-            Button {
-              project.send(event: .AddSection(projectId: project.projectData.data.id), db: db)
-            } label: {
-              Image(systemName: "plus")
-            }
-            .buttonStyle(AddNewSectionButtonStyle())
-            .accessibilityIdentifier("AddNewSectionButton")
-          } else if project.currentView == CurrentView.images {
-            Button {
-              project.showPhotoPickerView()
-            } label: {
-              Image(systemName: "photo.badge.plus")
-            }
-            .buttonStyle(AddImageButtonStyle())
-            .photosPicker(
-              isPresented: $project.showPhotoPicker,
-              selection: $project.pickerItem,
-              matching: .images
-            )
-            .onChange(of: project.pickerItem) {
-              project.send(event: .HandleImagePicker(photoPicker: project.pickerItem), db: db)
-            }
+          switch project.currentView {
+            case .details:
+              Button {
+                project.send(event: .AddSection(projectId: project.projectData.data.id), db: db)
+              } label: {
+                Image(systemName: "plus")
+              }
+              .buttonStyle(AddNewSectionButtonStyle())
+              .accessibilityIdentifier("AddNewSectionButton")
+
+            case .images:
+              Button {
+                project.showPhotoPickerView()
+              } label: {
+                Image(systemName: "photo.badge.plus")
+              }
+              .buttonStyle(AddImageButtonStyle())
+              .photosPicker(
+                isPresented: $project.showPhotoPicker,
+                selection: $project.pickerItem,
+                matching: .images
+              )
+              .onChange(of: project.pickerItem) {
+                project.send(event: .HandleImagePicker(photoPicker: project.pickerItem), db: db)
+              }
           }
         }
       }
