@@ -83,8 +83,8 @@ struct ImagesView: View {
       ImageOverlayView(
         model: $model,
         item: item,
-        transitionNameSpace: transitionNamespace
       )
+      .navigationTransition(.zoom(sourceID: item.id, in: transitionNamespace))
     }
     .animation(.easeOut(duration: 0.1), value: model.inDeleteMode)
     .animation(.easeOut(duration: 0.1), value: model.overlayedImage)

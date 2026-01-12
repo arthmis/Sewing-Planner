@@ -5,7 +5,6 @@ struct ImageOverlayView: View {
   @Environment(ProjectViewModel.self) private var project
   @Binding var model: ProjectImages
   let item: OverlayedImage
-  let transitionNameSpace: Namespace.ID
 
   var body: some View {
     VStack {
@@ -29,7 +28,6 @@ struct ImageOverlayView: View {
         .scaledToFit()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
-    .navigationTransition(.zoom(sourceID: item.id, in: transitionNameSpace))
   }
 }
 
