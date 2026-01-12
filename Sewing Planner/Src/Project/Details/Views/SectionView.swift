@@ -26,48 +26,7 @@ struct SectionView: View {
           .background(Color(red: 230, green: 230, blue: 230)),
         alignment: .bottom
       )
-      VStack(spacing: 0) {
-        ForEach($model.items, id: \.self.record.id) { $item in
-          if !model.isEditingSection {
-            ItemView(
-              data: $item,
-              sectionId: model.section.id,
-            )
-            .contentShape(Rectangle())
-            .onLongPressGesture {
-              withAnimation(.smooth(duration: 0.2)) {
-                model.isEditingSection = true
-                model.selectedItems.insert(item.record.id)
-              }
-            }
-            .padding(.top, 4)
-          } else {
-            let appDatabase = db
-            SelectedSectionItemView(
-              data: $item,
-              selected: $model.selectedItems,
-              sectionId: model.section.id
-            )
-            .contentShape(Rectangle())
-            .onDrag {
-              model.draggedItem = item
-              return NSItemProvider(object: "\(item.hashValue)" as NSString)
-            }
-            .onDrop(
-              of: [.text],
-              delegate: DropSectionItemViewDelegate(
-                item: item,
-                data: $model.items,
-                draggedItem: $model.draggedItem,
-                saveNewOrder: model.saveOrder,
-                db: appDatabase,
-              )
-            )
-            .padding(.top, 4)
-          }
-        }
-        .frame(maxWidth: .infinity)
-      }
+      SectionItemsListView(model: $model, db: db)
       AddItemView(
         isAddingItem: $model.isAddingItem,
         addItem: model.addItem,
