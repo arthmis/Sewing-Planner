@@ -53,7 +53,7 @@ extension ProjectViewModel {
         return .AddNewSection(section: sectionInput)
 
       case .AddSectionToState(let sectionRecord):
-        let section = Section(id: UUID(), name: sectionRecord)
+        let section = Section(name: sectionRecord)
         self.projectData.sections.append(section)
 
         return nil

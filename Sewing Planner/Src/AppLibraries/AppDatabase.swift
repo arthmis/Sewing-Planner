@@ -32,24 +32,6 @@ struct AppDatabase {
 }
 
 extension AppDatabase {
-  func addProject(project: inout ProjectMetadataInput) throws
-    -> ProjectMetadata
-  {
-    try dbWriter.write { db in
-      let now = Date()
-      project.createDate = now
-      project.updateDate = now
-      try project.save(db)
-      return ProjectMetadata(from: project)
-    }
-  }
-
-  func getWriter() -> any DatabaseWriter {
-    return dbWriter
-  }
-}
-
-extension AppDatabase {
   private var migrator: DatabaseMigrator {
     var migrator = DatabaseMigrator()
 
@@ -121,6 +103,24 @@ extension AppDatabase {
 }
 
 extension AppDatabase {
+  func addProject(project: inout ProjectMetadataInput) throws
+    -> ProjectMetadata
+  {
+    try dbWriter.write { db in
+      let now = Date()
+      project.createDate = now
+      project.updateDate = now
+      try project.save(db)
+      return ProjectMetadata(from: project)
+    }
+  }
+
+  func getWriter() -> any DatabaseWriter {
+    return dbWriter
+  }
+}
+
+extension AppDatabase {
   func fetchProjectsAndProjectImage() throws -> [ProjectCardModel] {
     return try dbWriter.read { db in
       // let request = ProjectMetadata.including(optional: ProjectMetadata.image)
@@ -170,7 +170,6 @@ extension AppDatabase {
           Section(
             section: sectionRecord,
             items: sectionItems,
-            id: UUID()
           )
         )
       }

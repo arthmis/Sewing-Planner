@@ -38,7 +38,7 @@ final class ProjectData {
       )
       try sectionInput.save(db)
       let sectionRecord = SectionRecord(from: sectionInput)
-      let section = Section(id: UUID(), name: sectionRecord)
+      let section = Section(name: sectionRecord)
       sections.append(section)
     }
   }

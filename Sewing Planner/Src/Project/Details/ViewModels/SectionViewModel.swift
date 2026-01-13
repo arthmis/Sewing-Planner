@@ -16,7 +16,6 @@ enum FocusField {
 class Section {
   var section: SectionRecord
   var items: [SectionItem] = []
-  var id: UUID
   var deletedItems: [SectionItemRecord] = []
   var selectedItems: Set<Int64> = []
   var isAddingItem = false
@@ -24,15 +23,13 @@ class Section {
   var isEditingSection = false
   var isBeingDeleted = false
 
-  init(id: UUID, name: SectionRecord) {
+  init(name: SectionRecord) {
     section = name
-    self.id = id
   }
 
-  init(section: SectionRecord, items: [SectionItem], id: UUID) {
+  init(section: SectionRecord, items: [SectionItem]) {
     self.section = section
     self.items = items
-    self.id = id
   }
 
   var hasSelections: Bool {

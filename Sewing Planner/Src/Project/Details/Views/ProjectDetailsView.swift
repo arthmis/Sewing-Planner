@@ -29,7 +29,7 @@ struct ProjectDataView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.bottom, 25)
-            ForEach($projectBinding.projectData.sections, id: \.id) {
+            ForEach($projectBinding.projectData.sections, id: \.section.id) {
               $section in
               SectionView(model: $section, db: db)
                 .padding(.bottom, 16)
