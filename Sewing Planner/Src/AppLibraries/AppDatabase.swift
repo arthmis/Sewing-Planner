@@ -200,37 +200,6 @@ extension AppDatabase {
     }
 
   }
-
-  func getProjectThumbnails(projectId: Int64, records: [ProjectImageRecord]) -> [ProjectImage] {
-    var projectImages: [ProjectImage] = []
-
-    for record in records {
-      do {
-        let thumbnailData = try AppFiles().getThumbnailImage(
-          for: record.thumbnail,
-          fromProject: projectId
-        )
-        // TODO: show a placeholder image or view instead of ignoring the image that failed to load
-        // inform the user of this error
-        guard let thumbnail = thumbnailData else {
-          NSLog(
-            "couldn't get image thumbnail \(record.thumbnail) for project: \(projectId)"
-          )
-          continue
-        }
-        let projectImage = ProjectImage(
-          record: record,
-          path: record.filePath,
-          image: thumbnail
-        )
-        projectImages.append(projectImage)
-      } catch {
-        // add error handling but don't exit the function
-      }
-    }
-
-    return projectImages
-  }
 }
 
 extension AppDatabase {

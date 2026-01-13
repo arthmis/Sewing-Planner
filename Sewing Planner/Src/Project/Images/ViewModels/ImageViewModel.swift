@@ -157,11 +157,35 @@ class ProjectImages {
       // TODO: decide what I want to do here
     }
 
-    var images = db.getProjectThumbnails(projectId: projectId, records: records)
-    images.append(contentsOf: sharedImages)
+    var projectImages: [ProjectImage] = []
+    for record in records {
+      do {
+        let thumbnailData = try AppFiles().getThumbnailImage(
+          for: record.thumbnail,
+          fromProject: projectId
+        )
+        // TODO: show a placeholder image or view instead of ignoring the image that failed to load
+        // inform the user of this error
+        guard let thumbnail = thumbnailData else {
+          NSLog(
+            "couldn't get image thumbnail \(record.thumbnail) for project: \(projectId)"
+          )
+          continue
+        }
+        let projectImage = ProjectImage(
+          record: record,
+          path: record.filePath,
+          image: thumbnail
+        )
+        projectImages.append(projectImage)
+      } catch {
+        // add error handling but don't exit the function
+      }
+    }
+    projectImages.append(contentsOf: sharedImages)
 
     await MainActor.run {
-      self.images = images
+      self.images = projectImages
     }
 
   }
