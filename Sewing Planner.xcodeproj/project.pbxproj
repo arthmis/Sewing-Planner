@@ -103,19 +103,12 @@
 			);
 			target = 6EF0C8382BED3CE200E7576F /* Sewing Planner */;
 		};
-		6E4914242EB2A1CC0077C63D /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				DatabaseTest.swift,
-			);
-			target = 6E4914192EB2A0B30077C63D /* Sewing PlannerUnitTests */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		6E2126DF2EAC6AD400A7DC68 /* ReceiveImage */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (6E2126E92EAC6AD600A7DC68 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = ReceiveImage; sourceTree = "<group>"; };
 		6E4912692EAE62700077C63D /* SharedExtensionFiles */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (6E49126D2EAE62BD0077C63D /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SharedExtensionFiles; sourceTree = "<group>"; };
-		6E49141B2EB2A0B30077C63D /* Sewing PlannerUnitTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (6E4914242EB2A1CC0077C63D /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "Sewing PlannerUnitTests"; sourceTree = "<group>"; };
+		6E49141B2EB2A0B30077C63D /* Sewing PlannerUnitTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Sewing PlannerUnitTests"; sourceTree = "<group>"; };
 		6E748F932CD2CAA90076F1B4 /* Src */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Src; sourceTree = "<group>"; };
 		6E748FC92CD2D6110076F1B4 /* Fonts */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Fonts; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */

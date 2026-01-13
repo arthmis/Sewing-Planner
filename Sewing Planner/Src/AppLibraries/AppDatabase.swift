@@ -24,9 +24,6 @@ struct AppDatabase {
           try SharedPersistence().removeSharedData()
         }
       }
-
-      UserDefaults.standard.set(false, forKey: UserCreatedOneProject)
-
     #endif
   }
 }
