@@ -154,27 +154,23 @@ extension AppDatabase {
 
   func getSections(projectId: Int64) throws -> [Section] {
     return try dbWriter.read { db in
-      var sections: [Section] = []
       let sectionRecords: [SectionRecord] =
         try SectionRecord
         .all()
         .filter(Column("projectId") == projectId)
         .fetchAll(db)
 
-      for sectionRecord in sectionRecords {
+      return try sectionRecords.map { sectionRecord in
         let sectionItems = try getSectionItems(
           sectionId: sectionRecord.id,
           from: db
         )
-        sections.append(
+        return
           Section(
             section: sectionRecord,
             items: sectionItems,
           )
-        )
       }
-
-      return sections
     }
   }
 
