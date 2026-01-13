@@ -20,7 +20,6 @@ struct Sewing_PlannerUnitTests {
     let sections =
       sections ?? [
         Section(
-          id: UUID(),
           name: SectionRecord(
             id: 1,
             projectId: 1,
@@ -75,7 +74,6 @@ struct Sewing_PlannerUnitTests {
       Section(
         section: section,
         items: [],
-        id: UUID(),
 
       )
     ]
@@ -160,7 +158,6 @@ struct Sewing_PlannerUnitTests {
     let now = Date.now
     let sections = [
       Section(
-        id: UUID(),
         name: SectionRecord(
           id: 1,
           projectId: 1,
@@ -258,8 +255,6 @@ struct Sewing_PlannerUnitTests {
         items: [
           sectionItem
         ],
-        id: UUID(),
-
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
@@ -303,8 +298,6 @@ struct Sewing_PlannerUnitTests {
         items: [
           sectionItem
         ],
-        id: UUID(),
-
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
@@ -345,8 +338,6 @@ struct Sewing_PlannerUnitTests {
         items: [
           sectionItem
         ],
-        id: UUID(),
-
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
@@ -391,8 +382,6 @@ struct Sewing_PlannerUnitTests {
             )
           ),
         ],
-        id: UUID(),
-
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
@@ -446,8 +435,6 @@ struct Sewing_PlannerUnitTests {
             )
           ),
         ],
-        id: UUID(),
-
       ),
       Section(
         section: SectionRecord(
@@ -470,8 +457,6 @@ struct Sewing_PlannerUnitTests {
             )
           )
         ],
-        id: UUID(),
-
       ),
     ]
     let model = initializeProjectViewModel(sections: sections)
