@@ -7,7 +7,6 @@
 
 import Foundation
 import GRDB
-import os.log
 
 /// docs on implementing this struct https://github.com/groue/GRDB.swift/blob/master/Documentation/DemoApps/GRDBDemoiOS/GRDBDemoiOS/AppDatabase.swift
 struct AppDatabase {
@@ -42,11 +41,6 @@ extension AppDatabase {
       project.updateDate = now
       try project.save(db)
       return ProjectMetadata(from: project)
-      //            try db.execute(sql: "INSERT INTO project (name, completed, createDate, updateDate) VALUES (?, ?, ?, ?)", arguments: [project.name, project.completed, now, now])
-      //            project.id = db.lastInsertedRowID
-      //            project.createDate = now
-      //            project.updateDate = now
-      //            return project
     }
   }
 
@@ -127,56 +121,28 @@ extension AppDatabase {
 }
 
 extension AppDatabase {
-  func fetchProjectsAndProjectImage() throws -> [ProjectCardViewModel] {
-    var projectDisplayData: [ProjectCardViewModel] = []
-
-    try dbWriter.read { db in
+  func fetchProjectsAndProjectImage() throws -> [ProjectCardModel] {
+    return try dbWriter.read { db in
+      // let request = ProjectMetadata.including(optional: ProjectMetadata.image)
+      // let projectsData = try ProjectCardModel.fetchAll(db, request)
+      // print(projectsData)
+      // print(projectsData.count)
       let projects: [ProjectMetadata] = try ProjectMetadata.all().order(
         ProjectColumns.id
       )
       .fetchAll(db)
 
-      for project in projects {
+      let projectCards = try projects.map { project in
         let projectIdColumn = Column("projectId")
-        if let record = try ProjectImageRecord.all().filter(
+        let record = try ProjectImageRecord.all().filter(
           projectIdColumn == project.id
-        ).order(Column("id")).fetchOne(db) {
-          var hadError = false
-          var projectImage: ProjectDisplayImage
-          do {
-            let image = try AppFiles().getThumbnailImage(
-              for: record.thumbnail,
-              fromProject: project.id
-            )
-            projectImage = ProjectDisplayImage(
-              record: record,
-              path: record.filePath,
-              image: image
-            )
-          } catch {
-            hadError = true
-            projectImage = ProjectDisplayImage(
-              record: record,
-              path: record.filePath,
-              image: nil
-            )
-          }
-          projectDisplayData.append(
-            ProjectCardViewModel(
-              project: project,
-              image: projectImage,
-              error: hadError
-            )
-          )
-        } else {
-          projectDisplayData.append(
-            ProjectCardViewModel(project: project, error: false)
-          )
-        }
-      }
-    }
+        ).order(Column("id")).fetchOne(db)
 
-    return projectDisplayData
+        return ProjectCardModel(project: project, image: record)
+      }
+
+      return projectCards
+    }
   }
 
   func getProject(id: Int64) throws -> ProjectMetadata? {

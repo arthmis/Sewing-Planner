@@ -22,7 +22,40 @@ struct ProjectsView: View {
   func fetchProjects() {
     do {
       let projects = try appDatabase.fetchProjectsAndProjectImage()
-      store.projects = ProjectsViewModel(projects: projects)
+
+      let projectCards = projects.map { projectCard in
+        if let imageRecord = projectCard.image {
+          var hadError = false
+          var projectImage: ProjectDisplayImage
+          do {
+            let image = try AppFiles().getThumbnailImage(
+              for: imageRecord.thumbnail,
+              fromProject: projectCard.project.id
+            )
+            projectImage = ProjectDisplayImage(
+              record: imageRecord,
+              path: imageRecord.filePath,
+              image: image
+            )
+          } catch {
+            hadError = true
+            projectImage = ProjectDisplayImage(
+              record: imageRecord,
+              path: imageRecord.filePath,
+              image: nil
+            )
+          }
+          return ProjectCardViewModel(
+            project: projectCard.project,
+            image: projectImage,
+            error: hadError
+          )
+        } else {
+          return ProjectCardViewModel(project: projectCard.project, error: false)
+
+        }
+      }
+      store.projects = ProjectsViewModel(projects: projectCards)
     } catch {
       store.appError = AppError.projectCards
     }
