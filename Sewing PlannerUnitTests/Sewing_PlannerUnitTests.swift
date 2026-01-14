@@ -396,7 +396,7 @@ struct Sewing_PlannerUnitTests {
     #expect(section.selectedItems.contains(item.record.id))
     #expect(section.selectedItems.count == 1)
 
-    model.handleEvent(
+    _ = model.handleEvent(
       .toggleSelectedSectionItem(withId: 1, fromSectionWithId: 1)
     )
     section = model.projectData.sections.first(where: { $0.section.id == 1 })!
@@ -466,7 +466,7 @@ struct Sewing_PlannerUnitTests {
     )
     #expect(effect == nil)
 
-    var section = model.projectData.sections.first(where: { $0.section.id == 1 })!
+    let section = model.projectData.sections.first(where: { $0.section.id == 1 })!
     #expect(section.selectedItems.isEmpty)
     #expect(section.items.count == 1)
     #expect(section.items[0].record.id == 3)
