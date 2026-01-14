@@ -39,6 +39,7 @@ struct AppFiles {
           attributes: nil
         )
       } catch {
+        // TODO: return an error instead of nil
         print("Error \(error)")
         return nil
       }
@@ -73,22 +74,12 @@ struct AppFiles {
       // TODO: figure out better logging
       NSLog("couldn't create thumbnail for image: \(fileIdentifier) for project: \(projectId)")
     }
-    //        image.image.prepareThumbnail(of: thumbnailSize) { thumbnailImage in
-    //            if let thumbnail = thumbnailImage {
-    //                let data = thumbnail.pngData()
-    //                do {
-    //                    try createThumbnailForImage(withIdentifier: thumbnailIdentifier, forProject: projectId, withContents: data)
-    //                } catch {
-    //                    // TODO: figure out better logging
-    //                    NSLog("couldn't create thumbnail for image: \(fileIdentifier) for project: \(projectId)")
-    //                }
-    //            }
-    //        }
 
     let data = image.image.pngData()
     let createFileSuccess = fileManager.createFile(atPath: newFilePath.path(), contents: data)
 
     if !createFileSuccess {
+      // TODO: add logging
       print("couldn't create file at file path: \(newFilePath)")
       return nil
     }
