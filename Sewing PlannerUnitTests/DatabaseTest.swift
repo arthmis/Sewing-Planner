@@ -17,6 +17,30 @@ struct Sewing_PlannerDatabaseTests {
     _ = try db.addProject(project: &project)
   }
 
+  private func seedSection(section: SectionInputRecord, db: AppDatabase) throws {
+    var sectionInput = section
+
+    try db.getWriter().write { db in
+      try sectionInput.save(db)
+    }
+  }
+
+  private func seedSectionItems(
+    section: [(SectionItemInputRecord, SectionItemNoteInputRecord?)],
+    db: AppDatabase
+  ) throws {
+    try db.getWriter().write { db in
+      try section.forEach { itemInput in
+        var (item, note) = itemInput
+        try item.insert(db)
+
+        if var note = note {
+          try note.insert(db)
+        }
+      }
+    }
+  }
+
   @Test("Test add project")
   func testAddProject() throws {
     let db = AppDatabase.empty()
@@ -66,4 +90,156 @@ struct Sewing_PlannerDatabaseTests {
     #expect(project.name == "Project 2")
     #expect(project.completed == true)
   }
+
+  @Test("Test get project that doesn't exist")
+  func testGetProjectThatDoesNotExist() throws {
+    let db = AppDatabase.empty()
+    let now = Date()
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: db)
+
+    let project = try db.getProject(id: 2)
+    #expect(project == nil)
+
+  }
+
+  @Test("Test get project section item")
+  func testGetProjectSectionItem() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let sectionRecordInput = SectionInputRecord(
+      id: nil,
+      projectId: 1,
+      name: "Section 1",
+      isDeleted: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedSection(section: sectionRecordInput, db: appDb)
+
+    let sectionItemInput: [(SectionItemInputRecord, SectionItemNoteInputRecord?)] = [
+      (SectionItemInputRecord(text: "text", order: 0, sectionId: 1), nil)
+    ]
+    try seedSectionItems(section: sectionItemInput, db: appDb)
+
+    let sectionItems = try appDb.reader.read { db in
+      let sectionItems = try appDb.getSectionItems(sectionId: 1, from: db)
+      return sectionItems
+    }
+
+    #expect(sectionItems.count == 1)
+    #expect(sectionItems[0].record.text == "text")
+  }
+
+  @Test("Test get project section items")
+  func testGetProjectSectionItems() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let sectionRecordInput = SectionInputRecord(
+      id: nil,
+      projectId: 1,
+      name: "Section 1",
+      isDeleted: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedSection(section: sectionRecordInput, db: appDb)
+
+    let sectionItemInput: [(SectionItemInputRecord, SectionItemNoteInputRecord?)] = [
+      (SectionItemInputRecord(text: "text", order: 0, sectionId: 1), nil),
+      (
+        SectionItemInputRecord(text: "text 2", order: 1, sectionId: 1),
+        SectionItemNoteInputRecord(text: "note 2", sectionItemId: 2)
+      ),
+      (
+        SectionItemInputRecord(text: "text 3", order: 2, sectionId: 1),
+        nil
+      ),
+    ]
+    try seedSectionItems(section: sectionItemInput, db: appDb)
+
+    let sectionItems = try appDb.reader.read { db in
+      let sectionItems = try appDb.getSectionItems(sectionId: 1, from: db)
+      return sectionItems
+    }
+
+    #expect(sectionItems.count == 3)
+    #expect(sectionItems[1].record.text == "text 2")
+    #expect(sectionItems[1].note?.text == "note 2")
+    #expect(sectionItems[2].note == nil)
+  }
+
+  @Test("Test get project section items order")
+  func testGetProjectSectionItemsOrder() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let sectionRecordInput = SectionInputRecord(
+      id: nil,
+      projectId: 1,
+      name: "Section 1",
+      isDeleted: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedSection(section: sectionRecordInput, db: appDb)
+
+    let sectionItemInput: [(SectionItemInputRecord, SectionItemNoteInputRecord?)] = [
+      (SectionItemInputRecord(text: "text", order: 0, sectionId: 1), nil),
+      (
+        SectionItemInputRecord(text: "text 2", order: 1, sectionId: 1),
+        SectionItemNoteInputRecord(text: "note 2", sectionItemId: 2)
+      ),
+      (
+        SectionItemInputRecord(text: "text 3", order: 2, sectionId: 1),
+        nil
+      ),
+    ]
+    try seedSectionItems(section: sectionItemInput, db: appDb)
+
+    let sectionItems = try appDb.reader.read { db in
+      let sectionItems = try appDb.getSectionItems(sectionId: 1, from: db)
+      return sectionItems
+    }
+
+    var startingOrder = sectionItems[0].record.order
+    let iter = sectionItems.makeIterator().dropFirst()
+    for item in iter {
+      #expect(item.record.order > startingOrder)
+      startingOrder = item.record.order
+    }
+  }
+
 }
