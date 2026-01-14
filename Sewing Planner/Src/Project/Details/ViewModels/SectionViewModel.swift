@@ -36,35 +36,6 @@ class Section {
     !selectedItems.isEmpty
   }
 
-  func addItem(text: String, note: String?, db: AppDatabase) throws {
-    try db.getWriter().write { db in
-      // TODO: do this in a transaction or see if the write is already a transaction
-      let order = Int64(items.count)
-      var recordInput = SectionItemInputRecord(
-        text: text.trimmingCharacters(in: .whitespacesAndNewlines),
-        order: order,
-        sectionId: section.id
-      )
-      recordInput.sectionId = section.id
-      try recordInput.save(db)
-      let record = SectionItemRecord(from: recordInput)
-
-      if let noteText = note {
-        var noteInputRecord = SectionItemNoteInputRecord(
-          text: noteText.trimmingCharacters(in: .whitespacesAndNewlines),
-          sectionItemId: record.id
-        )
-        try noteInputRecord.save(db)
-        let noteRecord = SectionItemNoteRecord(from: noteInputRecord)
-        let sectionItem = SectionItem(record: record, note: noteRecord)
-        items.append(sectionItem)
-      } else {
-        let sectionItem = SectionItem(record: record, note: nil)
-        items.append(sectionItem)
-      }
-    }
-  }
-
   func saveOrder(db: AppDatabase) throws {
     try db.getWriter().write { db in
       for case (let i, var item) in items.enumerated() {

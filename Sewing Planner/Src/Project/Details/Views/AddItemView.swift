@@ -12,7 +12,6 @@ struct AddItemView: View {
   @Environment(\.db) var db
   @Binding var isAddingItem: Bool
   @State var newItem = ""
-  let addItem: (_ text: String, _ note: String?, AppDatabase) throws -> Void
   @State var showErrorText = false
   @State var itemNote = ""
   let sectionId: Int64

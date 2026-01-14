@@ -29,7 +29,6 @@ struct SectionView: View {
       SectionItemsListView(model: $model, db: db)
       AddItemView(
         isAddingItem: $model.isAddingItem,
-        addItem: model.addItem,
         sectionId: model.section.id
       )
       .padding(.top, 8)
