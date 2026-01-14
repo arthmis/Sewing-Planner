@@ -296,6 +296,229 @@ struct Sewing_PlannerDatabaseTests {
     #expect(sections[0].items.isEmpty)
   }
 
+  @Test("Test get project sections only returns sections for specified project")
+  func testGetProjectSectionsFiltersByProject() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+
+    let projectInput1 = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput1, db: appDb)
+
+    let projectInput2 = ProjectMetadataInput(
+      id: nil,
+      name: "Project 2",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput2, db: appDb)
+
+    let sectionsInput = [
+      SectionInputRecord(
+        id: nil,
+        projectId: 1,
+        name: "Project 1 Section A",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+      SectionInputRecord(
+        id: nil,
+        projectId: 1,
+        name: "Project 1 Section B",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+      SectionInputRecord(
+        id: nil,
+        projectId: 2,
+        name: "Project 2 Section A",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+    ]
+    try seedSections(sections: sectionsInput, db: appDb)
+
+    let project1Sections = try appDb.getSections(projectId: 1)
+
+    #expect(project1Sections.count == 2)
+    #expect(project1Sections[0].section.name == "Project 1 Section A")
+    #expect(project1Sections[0].section.projectId == 1)
+    #expect(project1Sections[1].section.name == "Project 1 Section B")
+    #expect(project1Sections[1].section.projectId == 1)
+
+    let project2Sections = try appDb.getSections(projectId: 2)
+
+    #expect(project2Sections.count == 1)
+    #expect(project2Sections[0].section.name == "Project 2 Section A")
+    #expect(project2Sections[0].section.projectId == 2)
+  }
+
+  @Test("Test get project sections returns empty array for project with no sections")
+  func testGetProjectSectionsReturnsEmptyForProjectWithNoSections() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+
+    let projectInput1 = ProjectMetadataInput(
+      id: nil,
+      name: "Project with sections",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput1, db: appDb)
+
+    let projectInput2 = ProjectMetadataInput(
+      id: nil,
+      name: "Project without sections",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput2, db: appDb)
+
+    let sectionsInput = [
+      SectionInputRecord(
+        id: nil,
+        projectId: 1,
+        name: "Section A",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      )
+    ]
+    try seedSections(sections: sectionsInput, db: appDb)
+
+    let project2Sections = try appDb.getSections(projectId: 2)
+
+    #expect(project2Sections.isEmpty)
+  }
+
+  @Test("Test get section items only returns items for specified section")
+  func testGetSectionItemsFiltersBySection() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let sectionsInput = [
+      SectionInputRecord(
+        id: nil,
+        projectId: 1,
+        name: "Section 1",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+      SectionInputRecord(
+        id: nil,
+        projectId: 1,
+        name: "Section 2",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+    ]
+    try seedSections(sections: sectionsInput, db: appDb)
+
+    // Add items to both sections
+    let section1Items: [(SectionItemInputRecord, SectionItemNoteInputRecord?)] = [
+      (SectionItemInputRecord(text: "Section 1 Item A", order: 0, sectionId: 1), nil),
+      (SectionItemInputRecord(text: "Section 1 Item B", order: 1, sectionId: 1), nil),
+    ]
+    try seedSectionItems(section: section1Items, db: appDb)
+
+    let section2Items: [(SectionItemInputRecord, SectionItemNoteInputRecord?)] = [
+      (SectionItemInputRecord(text: "Section 2 Item A", order: 0, sectionId: 2), nil),
+      (SectionItemInputRecord(text: "Section 2 Item B", order: 1, sectionId: 2), nil),
+      (SectionItemInputRecord(text: "Section 2 Item C", order: 2, sectionId: 2), nil),
+    ]
+    try seedSectionItems(section: section2Items, db: appDb)
+
+    let section1SectionItems = try appDb.reader.read { db in
+      try appDb.getSectionItems(sectionId: 1, from: db)
+    }
+
+    #expect(section1SectionItems.count == 2)
+    #expect(section1SectionItems[0].record.text == "Section 1 Item A")
+    #expect(section1SectionItems[0].record.sectionId == 1)
+    #expect(section1SectionItems[1].record.text == "Section 1 Item B")
+    #expect(section1SectionItems[1].record.sectionId == 1)
+
+    let section2SectionItems = try appDb.reader.read { db in
+      try appDb.getSectionItems(sectionId: 2, from: db)
+    }
+
+    #expect(section2SectionItems.count == 3)
+    #expect(section2SectionItems[0].record.text == "Section 2 Item A")
+    #expect(section2SectionItems[0].record.sectionId == 2)
+    #expect(section2SectionItems[1].record.text == "Section 2 Item B")
+    #expect(section2SectionItems[1].record.sectionId == 2)
+    #expect(section2SectionItems[2].record.text == "Section 2 Item C")
+    #expect(section2SectionItems[2].record.sectionId == 2)
+  }
+
+  @Test("Test get section items returns empty array for section with no items")
+  func testGetSectionItemsReturnsEmptyForSectionWithNoItems() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let sectionsInput = [
+      SectionInputRecord(
+        id: nil,
+        projectId: 1,
+        name: "Section with items",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+      SectionInputRecord(
+        id: nil,
+        projectId: 1,
+        name: "Section without items",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+    ]
+    try seedSections(sections: sectionsInput, db: appDb)
+
+    let section1Items: [(SectionItemInputRecord, SectionItemNoteInputRecord?)] = [
+      (SectionItemInputRecord(text: "Item A", order: 0, sectionId: 1), nil)
+    ]
+    try seedSectionItems(section: section1Items, db: appDb)
+
+    let section2Items = try appDb.reader.read { db in
+      try appDb.getSectionItems(sectionId: 2, from: db)
+    }
+
+    #expect(section2Items.isEmpty)
+  }
+
   @Test("Test get project image records with images")
   func testGetProjectImageRecordsWithImages() throws {
     let appDb = AppDatabase.empty()
