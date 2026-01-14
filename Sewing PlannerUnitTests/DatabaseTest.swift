@@ -25,6 +25,12 @@ struct Sewing_PlannerDatabaseTests {
     }
   }
 
+  private func seedSections(sections: [SectionInputRecord], db: AppDatabase) throws {
+    try sections.forEach { section in
+      try seedSection(section: section, db: db)
+    }
+  }
+
   private func seedSectionItems(
     section: [(SectionItemInputRecord, SectionItemNoteInputRecord?)],
     db: AppDatabase
@@ -240,6 +246,38 @@ struct Sewing_PlannerDatabaseTests {
       #expect(item.record.order > startingOrder)
       startingOrder = item.record.order
     }
+  }
+
+  @Test("Test get project sections")
+  func testGetProjectSections() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let sectionsInput = [
+      SectionInputRecord(
+        id: nil,
+        projectId: 1,
+        name: "Section 1",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      )
+    ]
+
+    try seedSections(sections: sectionsInput, db: appDb)
+
+    let sections = try appDb.getSections(projectId: 1)
+
+    #expect(sections.count == 1)
+    #expect(sections[0].items.isEmpty)
   }
 
 }
