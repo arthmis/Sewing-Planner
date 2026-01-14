@@ -47,6 +47,22 @@ struct Sewing_PlannerDatabaseTests {
     }
   }
 
+  // MARK: - Project Image Records Tests
+
+  private func seedProjectImage(image: ProjectImageRecordInput, db: AppDatabase) throws {
+    var imageInput = image
+
+    try db.getWriter().write { db in
+      try imageInput.save(db)
+    }
+  }
+
+  private func seedProjectImages(images: [ProjectImageRecordInput], db: AppDatabase) throws {
+    try images.forEach { image in
+      try seedProjectImage(image: image, db: db)
+    }
+  }
+
   @Test("Test add project")
   func testAddProject() throws {
     let db = AppDatabase.empty()
@@ -278,6 +294,186 @@ struct Sewing_PlannerDatabaseTests {
 
     #expect(sections.count == 1)
     #expect(sections[0].items.isEmpty)
+  }
+
+  @Test("Test get project image records with images")
+  func testGetProjectImageRecordsWithImages() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let imagesInput = [
+      ProjectImageRecordInput(
+        id: nil,
+        projectId: 1,
+        filePath: "/path/to/image1.jpg",
+        thumbnail: "/path/to/thumb1.jpg",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+      ProjectImageRecordInput(
+        id: nil,
+        projectId: 1,
+        filePath: "/path/to/image2.jpg",
+        thumbnail: "/path/to/thumb2.jpg",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+    ]
+    try seedProjectImages(images: imagesInput, db: appDb)
+
+    let imageRecords = try appDb.getProjectImageRecords(projectId: 1)
+
+    #expect(imageRecords.count == 2)
+    #expect(imageRecords[0].filePath == "/path/to/image1.jpg")
+    #expect(imageRecords[0].thumbnail == "/path/to/thumb1.jpg")
+    #expect(imageRecords[1].filePath == "/path/to/image2.jpg")
+    #expect(imageRecords[1].thumbnail == "/path/to/thumb2.jpg")
+  }
+
+  @Test("Test get project image records with no images")
+  func testGetProjectImageRecordsWithNoImages() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let imageRecords = try appDb.getProjectImageRecords(projectId: 1)
+
+    #expect(imageRecords.isEmpty)
+  }
+
+  @Test("Test get project image records ordering")
+  func testGetProjectImageRecordsOrdering() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+
+    let projectInput = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput, db: appDb)
+
+    let imagesInput = [
+      ProjectImageRecordInput(
+        id: nil,
+        projectId: 1,
+        filePath: "/path/to/first.jpg",
+        thumbnail: "/path/to/thumb_first.jpg",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+      ProjectImageRecordInput(
+        id: nil,
+        projectId: 1,
+        filePath: "/path/to/second.jpg",
+        thumbnail: "/path/to/thumb_second.jpg",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+      ProjectImageRecordInput(
+        id: nil,
+        projectId: 1,
+        filePath: "/path/to/third.jpg",
+        thumbnail: "/path/to/thumb_third.jpg",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+    ]
+    try seedProjectImages(images: imagesInput, db: appDb)
+
+    let imageRecords = try appDb.getProjectImageRecords(projectId: 1)
+
+    #expect(imageRecords.count == 3)
+
+    // Verify ordering by id (ascending)
+    var previousId = imageRecords[0].id
+    let iter = imageRecords.makeIterator().dropFirst()
+    for record in iter {
+      #expect(record.id > previousId)
+      previousId = record.id
+    }
+  }
+
+  @Test("Test get project image records only returns images for specified project")
+  func testGetProjectImageRecordsFiltersByProject() throws {
+    let appDb = AppDatabase.empty()
+    let now = Date()
+
+    let projectInput1 = ProjectMetadataInput(
+      id: nil,
+      name: "Project 1",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput1, db: appDb)
+
+    let projectInput2 = ProjectMetadataInput(
+      id: nil,
+      name: "Project 2",
+      completed: false,
+      createDate: now,
+      updateDate: now
+    )
+    try seedProject(project: projectInput2, db: appDb)
+
+    let imagesInput = [
+      ProjectImageRecordInput(
+        id: nil,
+        projectId: 1,
+        filePath: "/path/to/project1_image.jpg",
+        thumbnail: "/path/to/project1_thumb.jpg",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+      ProjectImageRecordInput(
+        id: nil,
+        projectId: 2,
+        filePath: "/path/to/project2_image.jpg",
+        thumbnail: "/path/to/project2_thumb.jpg",
+        isDeleted: false,
+        createDate: now,
+        updateDate: now
+      ),
+    ]
+    try seedProjectImages(images: imagesInput, db: appDb)
+
+    let project1Images = try appDb.getProjectImageRecords(projectId: 1)
+
+    #expect(project1Images.count == 1)
+    #expect(project1Images[0].filePath == "/path/to/project1_image.jpg")
+    #expect(project1Images[0].projectId == 1)
+
+    let project2Images = try appDb.getProjectImageRecords(projectId: 2)
+
+    #expect(project2Images.count == 1)
+    #expect(project2Images[0].filePath == "/path/to/project2_image.jpg")
+    #expect(project2Images[0].projectId == 2)
   }
 
 }
