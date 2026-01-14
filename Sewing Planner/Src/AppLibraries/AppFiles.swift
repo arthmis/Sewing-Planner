@@ -87,7 +87,7 @@ struct AppFiles {
     return (fileIdentifier, thumbnailIdentifier)
   }
 
-  private func getPathForImage(forProject project: Int64, fileIdentifier: String) -> URL {
+  func getPathForImage(forProject project: Int64, fileIdentifier: String) -> URL {
     let projectPhotosPath = getProjectPhotoDirectoryPath(projectId: project)
     return projectPhotosPath.appendingPathComponent(fileIdentifier).appendingPathExtension(
       for: .png
@@ -186,7 +186,7 @@ extension AppFiles {
     return thumbnailsDirectory.appendingPathComponent(String(projectId))
   }
 
-  private func getPathForThumbnail(withIdentifier fileIdentifier: String, forProject project: Int64)
+  func getPathForThumbnail(withIdentifier fileIdentifier: String, forProject project: Int64)
     throws(AppFilesError) -> URL
   {
     let projectPhotosPath = try getProjectPhotosThumbnailsPath(projectId: project)
