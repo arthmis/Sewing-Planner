@@ -56,4 +56,20 @@ struct Sewing_PlannerAppFilesTests {
     #expect(storedImage != nil)
     #expect(storedImage!.pngData() == image.pngData())
   }
+
+  @Test("Test get thumbnail")
+  func testGetThumbnail() throws {
+    let size = CGSize(width: 600, height: 600)
+    let color = UIColor.white
+    let image = createSolidColorImage(size: size, color: color, scale: 1)
+
+    let result = try AppFiles().saveProjectImage(
+      projectId: 1,
+      image: ProjectImageInput(image: image)
+    )
+
+    let storedThumbnail = try AppFiles().getThumbnailImage(for: result!.1, fromProject: 1)
+    #expect(storedThumbnail != nil)
+    #expect(storedThumbnail!.pngData() == image.pngData())
+  }
 }
