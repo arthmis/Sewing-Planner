@@ -19,7 +19,7 @@ struct EmptyProjectCallToActionView: View {
       .font(.system(size: 16))
       .padding(.top, 8)
       Button("Create new section") {
-        project.addSection(db: db)
+        project.send(event: .AddSection(projectId: project.projectData.data.id), db: db)
       }
       .buttonStyle(PrimaryButtonStyle(fontSize: 16))
       .padding(.top, 28)

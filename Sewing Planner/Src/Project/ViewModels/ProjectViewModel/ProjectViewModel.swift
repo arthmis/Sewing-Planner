@@ -26,14 +26,6 @@ final class ProjectViewModel {
     self.projectImages = projectImages
   }
 
-  func addSection(db: AppDatabase) {
-    do {
-      try projectData.addSection(db: db)
-    } catch {
-      projectError = .addSection
-    }
-  }
-
   func showDeleteSectionConfirmationDialog(section: SectionRecord) {
     projectData.selectedSectionForDeletion = section
     projectData.showDeleteSectionDialog = true
