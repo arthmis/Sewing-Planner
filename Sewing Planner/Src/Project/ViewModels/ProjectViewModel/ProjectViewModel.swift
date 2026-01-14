@@ -47,50 +47,6 @@ final class ProjectViewModel {
     showPhotoPicker = true
   }
 
-  @MainActor func handleOnChangePickerItem(db: AppDatabase) async {
-    do {
-      try await handleOnChangePickerItemInner(db: db)
-    } catch {
-      projectError = .importImage
-    }
-  }
-
-  @MainActor private func handleOnChangePickerItemInner(db: AppDatabase) async throws {
-    let result = try await pickerItem?.loadTransferable(type: Data.self)
-
-    switch result {
-      case .some(let files):
-        // fix this unwrap by throwing an error, display to user
-        guard let img = UIImage(data: files) else {
-          throw ProjectError.importImage
-        }
-        // TODO: Performance problem here, scale the images in a background task
-        let resizedImage = img.scaleToAppImageMaxDimension()
-        let projectImage = ProjectImageInput(image: resizedImage)
-        try projectImages.importImages([projectImage], db: db)
-      case .none:
-        // TODO: think about how to deal with path that couldn't become an image
-        // I'm thinking display an error alert that lists every image that couldn't be uploaded
-        projectError = .importImage
-    // errorToast = ErrorToast(show: true, message: "Error importing images. Please try again later")
-    // log error
-    }
-  }
-
-  private func removeSection(section: SectionRecord) {
-    let updatedSections = projectData.sections.filter {
-      projectSection in
-      section.id != projectSection.section.id
-    }
-    projectData.sections = updatedSections
-    projectData.cancelDeleteSection()
-  }
-
-  private func cancelSectionDeletion(withError error: ProjectError) {
-    projectError = error
-    projectData.cancelDeleteSection()
-  }
-
   nonisolated func updateProjectNameInSharedExtensionProjectList(project: ProjectMetadata)
     throws
   {

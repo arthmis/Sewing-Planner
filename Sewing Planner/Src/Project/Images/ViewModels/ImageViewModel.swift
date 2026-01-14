@@ -47,11 +47,6 @@ class ProjectImages {
     return ProjectImages(projectId: id, images: projectImages)
   }
 
-  func importImages(_ newImages: [ProjectImageInput], db: AppDatabase) throws {
-    let savedImages = try saveImages(images: newImages, db: db)
-    images.append(contentsOf: savedImages)
-  }
-
   private func saveImages(images: [ProjectImageInput], db: AppDatabase) throws -> [ProjectImage] {
     var savedImages: [ProjectImage] = []
     try db.getWriter().write { db in
@@ -91,21 +86,6 @@ class ProjectImages {
     return savedImages
   }
 
-  func deleteImages(db: AppDatabase) throws {
-    try db.getWriter().write { db in
-      for image in deletedImages {
-        do {
-          try AppFiles().deleteImage(projectId: projectId, image: image)
-          try image.record.delete(db)
-        } catch {
-          throw ProjectError.deleteImages
-        }
-      }
-    }
-
-    deletedImages.removeAll()
-  }
-
   var selectedImagesIsEmpty: Bool {
     selectedImages.isEmpty
   }
@@ -113,23 +93,6 @@ class ProjectImages {
   func cancelDeleteMode() {
     selectedImages = Set()
     inDeleteMode = false
-  }
-
-  func handleDeleteImage(db: AppDatabase) throws {
-    if selectedImagesIsEmpty {
-      return
-    }
-
-    for imageId in selectedImages {
-      if let index = images.firstIndex(where: { $0.record.id == imageId }) {
-        let image = images.remove(at: index)
-        deletedImages.append(image)
-      }
-    }
-    try deleteImages(db: db)
-
-    inDeleteMode = false
-    selectedImages = Set()
   }
 
   func setDeleteMode(_ mode: Bool) {
