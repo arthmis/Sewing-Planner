@@ -37,7 +37,7 @@ struct ProjectView: View {
         ToolbarItem(placement: .navigation) {
           BackButton {
             dismiss()
-            store.selectedProject = nil
+            store.projectsState.selectedProject = nil
             fetchProjects()
           }
         }

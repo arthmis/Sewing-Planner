@@ -11,7 +11,7 @@ struct LoadProjectView: View {
 
   var body: some View {
     VStack {
-      if let project = store.selectedProject {
+      if let project = store.projectsState.selectedProject {
         ProjectView(
           project: project,
           projectsNavigation: $projectsNavigation,
@@ -40,7 +40,7 @@ struct LoadProjectView: View {
 
             let projectImages = try ProjectImages.getImages(with: id, from: appDatabase)
 
-            store.selectedProject = ProjectViewModel(
+            store.projectsState.selectedProject = ProjectViewModel(
               data: projectData,
               projectsNavigation: projectsNavigation,
               projectImages: projectImages

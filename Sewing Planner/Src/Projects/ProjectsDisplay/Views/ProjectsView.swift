@@ -55,7 +55,8 @@ struct ProjectsView: View {
 
         }
       }
-      store.projects = ProjectsViewModel(projects: projectCards)
+      // store.projects = ProjectsViewModel(projects: projectCards)
+      store.projectsState.projects = ProjectsViewModel(projects: projectCards)
     } catch {
       store.appError = AppError.projectCards
     }
@@ -83,7 +84,7 @@ struct ProjectsView: View {
           Text("Something unexpected happen. Contact developer about this.")
       }
     } else {
-      NavigationStack(path: $storeBinding.navigation) {
+      NavigationStack(path: $storeBinding.projectsState.navigation) {
         VStack {
           if !(settings.getUserCreatedProjectFirstTime() ?? false) {
             CreateProjectCTAView()
@@ -92,12 +93,12 @@ struct ProjectsView: View {
             ScrollView {
               LazyVStack(alignment: .center, spacing: 12) {
                 ForEach(
-                  $storeBinding.projects.projectsDisplay,
+                  $storeBinding.projectsState.projects.projectsDisplay,
                   id: \.self.project.id
                 ) { $project in
                   ProjectCardView(
                     projectData: project,
-                    projectsNavigation: $storeBinding.navigation
+                    projectsNavigation: $storeBinding.projectsState.navigation
                   )
                 }
               }
@@ -108,7 +109,7 @@ struct ProjectsView: View {
         .navigationDestination(for: ProjectMetadata.self) { _ in
           VStack {
             LoadProjectView(
-              projectsNavigation: $storeBinding.navigation,
+              projectsNavigation: $storeBinding.projectsState.navigation,
               fetchProjects: fetchProjects
             )
           }
@@ -117,7 +118,7 @@ struct ProjectsView: View {
         HStack {
           Button("New Project") {
             do {
-              try store.addProject()
+              try store.projectsState.addProject()
               if !(settings.getUserCreatedProjectFirstTime() ?? false) {
                 do {
                   try settings.userCreatedProjectFirstTime(val: true)
