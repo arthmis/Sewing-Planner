@@ -83,11 +83,28 @@ extension AppDatabase {
         table.column("createDate", .datetime).notNull()
         table.column("updateDate", .datetime).notNull()
       }
-    }
 
-    #if DEBUG
-      migrator.eraseDatabaseOnSchemaChange = true
-    #endif
+      try db.create(table: "fabrics", options: [.ifNotExists]) {
+        table in
+        table.autoIncrementedPrimaryKey("id").unique()
+        table.column("name", .text).notNull().indexed()
+        table.column("description", .text)
+        table.column("length", .real).notNull()
+        table.column("color", .text)
+        table.column("fabricType", .text)
+        table.column("pattern", .text)
+        table.column("storePurchasedFrom", .text)
+        table.column("link", .text)
+        table.column("purchasePrice", .real)
+        table.column("purchaseDate", .date)
+        table.column("createDate", .datetime).notNull()
+        table.column("updateDate", .datetime).notNull()
+      }
+
+      #if DEBUG
+        try db.drop(table: "fabrics")
+      #endif
+    }
 
     return migrator
   }
