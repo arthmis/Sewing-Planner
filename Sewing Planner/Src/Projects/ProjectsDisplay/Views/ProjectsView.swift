@@ -17,7 +17,7 @@ let UserCreatedOneProject: String = "CreatedOneProject"
 struct ProjectsView: View {
   @Environment(\.db) private var appDatabase
   @Environment(\.settings) var settings
-  @Environment(Store.self) var store
+  @Environment(StateStore.self) var store
 
   func fetchProjects() {
     do {

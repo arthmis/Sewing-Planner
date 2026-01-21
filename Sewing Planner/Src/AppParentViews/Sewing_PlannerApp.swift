@@ -23,7 +23,7 @@ struct Sewing_PlannerApp: App {
 
   var body: some Scene {
     WindowGroup {
-      ContentView(store: Store(db: db))
+      ContentView(store: StateStore(db: db))
     }
   }
 }

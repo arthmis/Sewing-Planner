@@ -3,7 +3,7 @@ import SwiftUI
 struct FabricsView: View {
   @Environment(\.db) private var db
   @Environment(\.settings) var settings
-  @Environment(Store.self) var store
+  @Environment(StateStore.self) var stateStore
   @State var showAddFabricDialog = false
 
   func handleDismiss() {
@@ -11,7 +11,7 @@ struct FabricsView: View {
   }
 
   var body: some View {
-    @Bindable var storeBinding = store
+    @Bindable var storeBinding = stateStore
     VStack {
       Button("Add Fabric") {
         showAddFabricDialog = true
@@ -31,17 +31,10 @@ struct FabricsView: View {
         .padding(.bottom, 12)
       }
     }.sheet(isPresented: $showAddFabricDialog, onDismiss: handleDismiss) {
-      NavigationStack {
-        FabricInputView()
-          .navigationBarItems(
-            leading: Button("Cancel") {
-              showAddFabricDialog = false
-            }
-          )
-          .navigationTitle("New Fabric")
-          .navigationBarTitleDisplayMode(.inline)
-          .navigationBarItems(trailing: Button("Add") { print("add") })
-      }
+      FabricInputView()
+    }
+    .onAppear {
+      stateStore.send(event: .fabrics(.loadFabrics), db: db)
     }
   }
 }

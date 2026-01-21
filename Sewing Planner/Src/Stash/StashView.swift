@@ -3,7 +3,7 @@ import SwiftUI
 struct StashView: View {
   @Environment(\.db) private var appDatabase
   @Environment(\.settings) var settings
-  @Environment(Store.self) var store
+  @Environment(StateStore.self) var store
 
   var body: some View {
     FabricsView()

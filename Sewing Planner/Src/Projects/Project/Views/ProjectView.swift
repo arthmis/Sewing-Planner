@@ -13,7 +13,7 @@ struct ProjectView: View {
   // used for dismissing a view(basically the back button)
   @Environment(\.dismiss) private var dismiss
   @Environment(\.db) private var db
-  @Environment(Store.self) private var store
+  @Environment(StateStore.self) private var store
   @State var project: ProjectViewModel
   @Binding var projectsNavigation: [ProjectMetadata]
   let fetchProjects: () -> Void

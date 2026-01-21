@@ -14,6 +14,7 @@ struct AppDatabase {
 
   init(_ dbWriter: any DatabaseWriter) throws {
     self.dbWriter = dbWriter
+
     try migrator.migrate(self.dbWriter)
 
     #if DEBUG
@@ -100,11 +101,11 @@ extension AppDatabase {
         table.column("createDate", .datetime).notNull()
         table.column("updateDate", .datetime).notNull()
       }
-
-      #if DEBUG
-        try db.drop(table: "fabrics")
-      #endif
     }
+
+    #if DEBUG
+      migrator.eraseDatabaseOnSchemaChange = true
+    #endif
 
     return migrator
   }

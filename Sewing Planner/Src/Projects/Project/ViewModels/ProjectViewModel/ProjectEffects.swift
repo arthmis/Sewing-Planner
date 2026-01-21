@@ -2,7 +2,7 @@ import GRDB
 import PhotosUI
 import SwiftUI
 
-enum Effect: Equatable {
+enum Effect {
   case AddNewSection(section: SectionInputRecord)
   case deleteSection(section: SectionRecord)
   case updateProjectTitle(projectData: ProjectMetadata)
@@ -18,6 +18,8 @@ enum Effect: Equatable {
   case deleteSectionItems(selected: [SectionItem], sectionId: Int64)
   case HandleImagePicker(photoPicker: PhotosPickerItem?, projectId: Int64)
   case DeleteImages([ProjectImage], projectId: Int64)
+  case StoreFabric(FabricRecordInput)
+  case retrieveAllFabrics
   case doNothing
 }
 
@@ -294,6 +296,10 @@ extension ProjectViewModel {
             }
           }
         }
+      case .StoreFabric(_):
+        print("do nothing")
+      case .retrieveAllFabrics:
+        print("do nothing")
     }
   }
 }

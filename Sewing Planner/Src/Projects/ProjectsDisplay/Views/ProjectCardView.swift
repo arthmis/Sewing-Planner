@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProjectCardView: View {
-  @Environment(Store.self) private var store
+  @Environment(StateStore.self) private var store
   var projectData: ProjectCardViewModel
   @Binding var projectsNavigation: [ProjectMetadata]
 

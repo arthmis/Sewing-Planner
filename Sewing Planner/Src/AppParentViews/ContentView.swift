@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
   @Environment(\.db) var db
-  @State var store: Store
+  @State var store: StateStore
 
   var body: some View {
 

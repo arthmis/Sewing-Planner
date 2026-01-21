@@ -4,7 +4,7 @@ struct LoadProjectView: View {
   // used for dismissing a view(basically the back button)
   @Environment(\.dismiss) private var dismiss
   @Environment(\.db) private var appDatabase
-  @Environment(Store.self) private var store
+  @Environment(StateStore.self) private var store
   @Binding var projectsNavigation: [ProjectMetadata]
   let fetchProjects: () -> Void
   // @State var isLoading = true
