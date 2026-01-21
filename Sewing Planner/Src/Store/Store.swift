@@ -6,7 +6,7 @@ class Store {
   var projectsState: ProjectsState
   var stashState: StashState
   var appError: AppError?
-  var appSection: AppSection = .projects
+  var appSection: AppSection = .stash
   let db: AppDatabase
 
   init(db: AppDatabase) {
