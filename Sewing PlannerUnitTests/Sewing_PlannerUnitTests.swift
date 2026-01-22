@@ -12,6 +12,13 @@ import UIKit
 @testable import Sewing_Planner
 
 struct Sewing_PlannerUnitTests {
+  @MainActor private func initializeStore(
+    projectsState: ProjectsState? = nil
+  ) -> StateStore {
+    let projectsState = projectsState ?? ProjectsState()
+    return StateStore(projectsState: projectsState)
+
+  }
   @MainActor private func initializeProjectViewModel(
     sections: [Section]? = nil,
     images: ProjectImages? = nil
@@ -78,6 +85,7 @@ struct Sewing_PlannerUnitTests {
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
     let newSectionName = SectionRecord(
       id: 1,
@@ -87,8 +95,10 @@ struct Sewing_PlannerUnitTests {
       createDate: now,
       updateDate: now
     )
-    let event: ProjectsEvent = .UpdateSectionName(section: newSectionName, oldName: section.name)
-    let effect = model.handleEvent(event)
+    let event: AppEvent = .projects(
+      .projectEvent(.UpdateSectionName(section: newSectionName, oldName: section.name))
+    )
+    let effect = stateStore.handleEvent(event)
 
     let expectedEffect: Effect = .updateSectionName(section: newSectionName, oldName: section.name)
     #expect(effect == expectedEffect)
@@ -145,8 +155,10 @@ struct Sewing_PlannerUnitTests {
   )
   @MainActor func testInitiateDeleteSection(section: SectionRecord, expectedEffect: Effect) {
     let model = initializeProjectViewModel()
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let resultEffect = model.handleEvent(.markSectionForDeletion(section))
+    let event: AppEvent = .projects(.projectEvent(.markSectionForDeletion(section)))
+    let resultEffect = stateStore.handleEvent(event)
     #expect(resultEffect == expectedEffect)
 
     let section = model.projectData.sections.first(where: { $0.section.id == section.id })
@@ -170,8 +182,10 @@ struct Sewing_PlannerUnitTests {
     ]
     sections[0].isBeingDeleted = true
     let model = initializeProjectViewModel(sections: sections)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let resultEffect = model.handleEvent(.RemoveSection(1))
+    let event: AppEvent = .projects(.projectEvent(.RemoveSection(1)))
+    let resultEffect = stateStore.handleEvent(event)
     #expect(resultEffect == nil)
 
     let section = model.projectData.sections.first(where: { $0.section.id == 1 })
@@ -181,8 +195,12 @@ struct Sewing_PlannerUnitTests {
   @Test("Test store section item")
   @MainActor func testStoreSectionItem() {
     let model = initializeProjectViewModel()
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let effect = model.handleEvent(.StoreSectionItem(text: "task 1", note: nil, sectionId: 1))
+    let event: AppEvent = .projects(
+      .projectEvent(.StoreSectionItem(text: "task 1", note: nil, sectionId: 1))
+    )
+    let effect = stateStore.handleEvent(event)
 
     let expectedEffect = Effect.SaveSectionItem(
       text: "task 1",
@@ -197,13 +215,15 @@ struct Sewing_PlannerUnitTests {
   @Test("Test add section item")
   @MainActor func testAddSectionItem() {
     let model = initializeProjectViewModel()
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
     let sectionTextRecord = SectionItemRecord(
       from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
     )
-    let effect = model.handleEvent(
-      .AddSectionItem(item: SectionItem(record: sectionTextRecord), sectionId: 1)
+    let event: AppEvent = .projects(
+      .projectEvent(.AddSectionItem(item: SectionItem(record: sectionTextRecord), sectionId: 1))
     )
+    let effect = stateStore.handleEvent(event)
 
     #expect(effect == nil)
 
@@ -216,17 +236,16 @@ struct Sewing_PlannerUnitTests {
   @Test("Test initiate update section item text")
   @MainActor func testInitiateStoreUpdatedSectionItemText() {
     let model = initializeProjectViewModel()
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
     let updatedSectionTextRecord = SectionItemRecord(
       from: SectionItemInputRecord(id: 1, text: "new test", order: 0, sectionId: 1)
     )
     let updatedSectionItem = SectionItem(record: updatedSectionTextRecord)
-    let effect = model.handleEvent(
-      .StoreUpdatedSectionItemText(
-        item: updatedSectionItem,
-        sectionId: 1
-      )
+    let event: AppEvent = .projects(
+      .projectEvent(.StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: 1))
     )
+    let effect = stateStore.handleEvent(event)
 
     let expectedEffect: Effect = .SaveSectionItemTextUpdate(
       item: updatedSectionItem,
@@ -258,17 +277,16 @@ struct Sewing_PlannerUnitTests {
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
     let updatedSectionTextRecord = SectionItemRecord(
       from: SectionItemInputRecord(id: 1, text: "new test", order: 0, sectionId: 1)
     )
     let updatedSectionItem = SectionItem(record: updatedSectionTextRecord)
-    let effect = model.handleEvent(
-      .UpdateSectionItemText(
-        item: updatedSectionItem,
-        sectionId: 1
-      )
+    let event: AppEvent = .projects(
+      .projectEvent(.UpdateSectionItemText(item: updatedSectionItem, sectionId: 1))
     )
+    let effect = stateStore.handleEvent(event)
 
     let expectedEffect: Effect? = nil
     #expect(effect == expectedEffect)
@@ -301,13 +319,15 @@ struct Sewing_PlannerUnitTests {
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
     var updatedSectionTextRecord = SectionItemRecord(
       from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
     )
-    let effect = model.handleEvent(
-      .toggleSectionItemCompletionStatus(updatedSectionTextRecord, sectionId: 1)
+    let event: AppEvent = .projects(
+      .projectEvent(.toggleSectionItemCompletionStatus(updatedSectionTextRecord, sectionId: 1))
     )
+    let effect = stateStore.handleEvent(event)
 
     updatedSectionTextRecord.isComplete.toggle()
     let expectedEffect: Effect? = Effect.SaveSectionItemUpdate(
@@ -341,15 +361,17 @@ struct Sewing_PlannerUnitTests {
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
     var updatedSectionTextRecord = SectionItemRecord(
       from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
     )
     updatedSectionTextRecord.isComplete.toggle()
 
-    let effect = model.handleEvent(
-      .UpdateSectionItem(item: updatedSectionTextRecord, sectionId: 1)
+    let event: AppEvent = .projects(
+      .projectEvent(.UpdateSectionItem(item: updatedSectionTextRecord, sectionId: 1))
     )
+    let effect = stateStore.handleEvent(event)
     #expect(effect == nil)
 
     let section = model.projectData.sections.first(where: { $0.section.id == 1 })!
@@ -385,10 +407,12 @@ struct Sewing_PlannerUnitTests {
       )
     ]
     let model = initializeProjectViewModel(sections: sections)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let effect = model.handleEvent(
-      .toggleSelectedSectionItem(withId: 1, fromSectionWithId: 1)
+    let event: AppEvent = .projects(
+      .projectEvent(.toggleSelectedSectionItem(withId: 1, fromSectionWithId: 1))
     )
+    let effect = stateStore.handleEvent(event)
     #expect(effect == nil)
 
     var section = model.projectData.sections.first(where: { $0.section.id == 1 })!
@@ -396,9 +420,7 @@ struct Sewing_PlannerUnitTests {
     #expect(section.selectedItems.contains(item.record.id))
     #expect(section.selectedItems.count == 1)
 
-    _ = model.handleEvent(
-      .toggleSelectedSectionItem(withId: 1, fromSectionWithId: 1)
-    )
+    _ = stateStore.handleEvent(event)
     section = model.projectData.sections.first(where: { $0.section.id == 1 })!
     item = section.items[0]
     #expect(!section.selectedItems.contains(item.record.id))
@@ -460,10 +482,12 @@ struct Sewing_PlannerUnitTests {
       ),
     ]
     let model = initializeProjectViewModel(sections: sections)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let effect = model.handleEvent(
-      .removeDeletedSectionItems(deletedIds: Set([1, 2]), sectionId: 1)
+    let event: AppEvent = .projects(
+      .projectEvent(.removeDeletedSectionItems(deletedIds: Set([1, 2]), sectionId: 1))
     )
+    let effect = stateStore.handleEvent(event)
     #expect(effect == nil)
 
     let section = model.projectData.sections.first(where: { $0.section.id == 1 })!
@@ -498,10 +522,12 @@ struct Sewing_PlannerUnitTests {
       ]
     )
     let model = initializeProjectViewModel(images: images)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let effect = model.handleEvent(
-      .ShowDeleteImagesView(initialSelectedImageId: 1)
+    let event: AppEvent = .projects(
+      .projectEvent(.ShowDeleteImagesView(initialSelectedImageId: 1))
     )
+    let effect = stateStore.handleEvent(event)
     #expect(effect == nil)
 
     #expect(model.projectImages.inDeleteMode == true)
@@ -529,10 +555,10 @@ struct Sewing_PlannerUnitTests {
         image: UIImage(ciImage: .empty())
       )
     let model = initializeProjectViewModel()
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let effect = model.handleEvent(
-      .AddImage(projectImage: projectImage)
-    )
+    let event: AppEvent = .projects(.projectEvent(.AddImage(projectImage: projectImage)))
+    let effect = stateStore.handleEvent(event)
     #expect(effect == nil)
 
     #expect(model.projectImages.images.count == 1)
@@ -579,26 +605,23 @@ struct Sewing_PlannerUnitTests {
       ]
     )
     let model = initializeProjectViewModel(images: images)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let effect = model.handleEvent(
-      .ToggleImageSelection(imageId: 1)
-    )
+    let event1: AppEvent = .projects(.projectEvent(.ToggleImageSelection(imageId: 1)))
+    let effect = stateStore.handleEvent(event1)
     #expect(effect == nil)
 
     #expect(model.projectImages.selectedImages.count == 1)
     #expect(model.projectImages.selectedImages.contains(1))
     #expect(!model.projectImages.selectedImages.contains(2))
 
-    _ = model.handleEvent(
-      .ToggleImageSelection(imageId: 2)
-    )
+    let event2: AppEvent = .projects(.projectEvent(.ToggleImageSelection(imageId: 2)))
+    _ = stateStore.handleEvent(event2)
     #expect(model.projectImages.selectedImages.count == 2)
     #expect(model.projectImages.selectedImages.contains(2))
     #expect(model.projectImages.selectedImages.contains(1))
 
-    _ = model.handleEvent(
-      .ToggleImageSelection(imageId: 1)
-    )
+    _ = stateStore.handleEvent(event1)
     #expect(model.projectImages.selectedImages.count == 1)
     #expect(model.projectImages.selectedImages.contains(2))
     #expect(!model.projectImages.selectedImages.contains(1))
@@ -648,8 +671,10 @@ struct Sewing_PlannerUnitTests {
       selectedImages: selectedImages
     )
     let model = initializeProjectViewModel(images: projectImages)
+    let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let effect = model.handleEvent(.DeleteImages)
+    let event: AppEvent = .projects(.projectEvent(.DeleteImages))
+    let effect = stateStore.handleEvent(event)
     let selectedImage = [
       ProjectImage(
         record: ProjectImageRecord(

@@ -62,7 +62,7 @@ struct FabricRecord: Identifiable, Codable, EncodableRecord, FetchableRecord,
   }
 }
 
-struct FabricRecordInput: Identifiable, Codable, EncodableRecord, FetchableRecord,
+struct FabricRecordInput: Hashable, Identifiable, Codable, EncodableRecord, FetchableRecord,
   MutablePersistableRecord, TableRecord
 {
   var id: Int64?

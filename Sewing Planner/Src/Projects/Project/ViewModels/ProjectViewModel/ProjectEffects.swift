@@ -2,7 +2,7 @@ import GRDB
 import PhotosUI
 import SwiftUI
 
-enum Effect {
+enum Effect: Equatable {
   case createProject
   case AddNewSection(section: SectionInputRecord)
   case deleteSection(section: SectionRecord)

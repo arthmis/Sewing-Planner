@@ -8,9 +8,9 @@ class StateStore {
   var appError: AppError?
   var appSection: AppSection = .stash
 
-  init() {
-    projectsState = ProjectsState()
-    stashState = StashState()
+  init(projectsState: ProjectsState? = nil) {
+    self.projectsState = projectsState ?? ProjectsState()
+    self.stashState = StashState()
   }
 
 }

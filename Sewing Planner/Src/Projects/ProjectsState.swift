@@ -6,8 +6,9 @@ class ProjectsState {
   var navigation: [ProjectMetadata] = []
   var selectedProject: ProjectViewModel?
 
-  init() {
+  init(selectedProject: ProjectViewModel? = nil) {
     projects = ProjectsViewModel()
+    self.selectedProject = selectedProject
   }
 
   func updateShareExtensionProjectList(project: ProjectMetadata) throws {
