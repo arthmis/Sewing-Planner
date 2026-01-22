@@ -15,52 +15,9 @@ import SwiftUI
 let UserCreatedOneProject: String = "CreatedOneProject"
 
 struct ProjectsView: View {
-  @Environment(\.db) private var appDatabase
+  @Environment(\.db) private var db
   @Environment(\.settings) var settings
   @Environment(StateStore.self) var store
-
-  func fetchProjects() {
-    do {
-      let projects = try appDatabase.fetchProjectsAndProjectImage()
-
-      let projectCards = projects.map { projectCard in
-        if let imageRecord = projectCard.image {
-          var hadError = false
-          var projectImage: ProjectDisplayImage
-          do {
-            let image = try AppFiles().getThumbnailImage(
-              for: imageRecord.thumbnail,
-              fromProject: projectCard.project.id
-            )
-            projectImage = ProjectDisplayImage(
-              record: imageRecord,
-              path: imageRecord.filePath,
-              image: image
-            )
-          } catch {
-            hadError = true
-            projectImage = ProjectDisplayImage(
-              record: imageRecord,
-              path: imageRecord.filePath,
-              image: nil
-            )
-          }
-          return ProjectCardViewModel(
-            project: projectCard.project,
-            image: projectImage,
-            error: hadError
-          )
-        } else {
-          return ProjectCardViewModel(project: projectCard.project, error: false)
-
-        }
-      }
-      // store.projects = ProjectsViewModel(projects: projectCards)
-      store.projectsState.projects = ProjectsViewModel(projects: projectCards)
-    } catch {
-      store.appError = AppError.projectCards
-    }
-  }
 
   var body: some View {
     @Bindable var storeBinding = store
@@ -117,16 +74,14 @@ struct ProjectsView: View {
 
         HStack {
           Button("New Project") {
-            do {
-              store.send(event: .projects(.createProject), db: appDatabase)
-              // todo move this into the effects handling
-              if !(settings.getUserCreatedProjectFirstTime() ?? false) {
-                do {
-                  try settings.userCreatedProjectFirstTime(val: true)
-                } catch {
-                  // TODO: log error
-                  print(error)
-                }
+            store.send(event: .projects(.createProject), db: db)
+            // todo move this into the effects handling
+            if !(settings.getUserCreatedProjectFirstTime() ?? false) {
+              do {
+                try settings.userCreatedProjectFirstTime(val: true)
+              } catch {
+                // TODO: log error
+                print(error)
               }
             } catch AppError.addProject {
               store.appError = .addProject
@@ -151,6 +106,49 @@ struct ProjectsView: View {
       .task {
         fetchProjects()
       }
+    }
+  }
+
+  func fetchProjects() {
+    do {
+      let projects = try db.fetchProjectsAndProjectImage()
+
+      let projectCards = projects.map { projectCard in
+        if let imageRecord = projectCard.image {
+          var hadError = false
+          var projectImage: ProjectDisplayImage
+          do {
+            let image = try AppFiles().getThumbnailImage(
+              for: imageRecord.thumbnail,
+              fromProject: projectCard.project.id
+            )
+            projectImage = ProjectDisplayImage(
+              record: imageRecord,
+              path: imageRecord.filePath,
+              image: image
+            )
+          } catch {
+            hadError = true
+            projectImage = ProjectDisplayImage(
+              record: imageRecord,
+              path: imageRecord.filePath,
+              image: nil
+            )
+          }
+          return ProjectCardViewModel(
+            project: projectCard.project,
+            image: projectImage,
+            error: hadError
+          )
+        } else {
+          return ProjectCardViewModel(project: projectCard.project, error: false)
+
+        }
+      }
+      // store.projects = ProjectsViewModel(projects: projectCards)
+      store.projectsState.projects = ProjectsViewModel(projects: projectCards)
+    } catch {
+      store.appError = AppError.projectCards
     }
   }
 }
