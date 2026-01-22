@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SectionTitleView: View {
-  @Environment(ProjectViewModel.self) var project
+  @Environment(StateStore.self) var store
   @Binding var model: Section
   let db: AppDatabase
   @State private var isEditingSectionName = false
@@ -23,8 +23,10 @@ struct SectionTitleView: View {
 
     var section = model.section
     section.name = sanitizedName
-    project.send(
-      event: .UpdateSectionName(section: section, oldName: model.section.name),
+    store.send(
+      event: .projects(
+        .projectEvent(.UpdateSectionName(section: section, oldName: model.section.name))
+      ),
       db: db
     )
 
@@ -87,7 +89,10 @@ struct SectionTitleView: View {
 
       Menu {
         Button("Delete") {
-          project.showDeleteSectionConfirmationDialog(section: model.section)
+          // TODO: try to remove usage of this question mark
+          store.projectsState.selectedProject?.showDeleteSectionConfirmationDialog(
+            section: model.section
+          )
         }
         Button("Delete Items") {
           model.isEditingSection = true

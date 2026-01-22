@@ -26,7 +26,7 @@ struct ProjectView: View {
           systemImage: "list.bullet.rectangle.portrait",
           value: .details
         ) {
-          ProjectDataView()
+          ProjectDataView(projectData: $project.projectData)
         }
         Tab("Images", systemImage: "photo.artframe", value: .images) {
           ImagesView(model: $project.projectImages)
@@ -46,7 +46,12 @@ struct ProjectView: View {
           switch project.currentView {
             case .details:
               Button {
-                project.send(event: .AddSection(projectId: project.projectData.data.id), db: db)
+                store.send(
+                  event: .projects(
+                    .projectEvent(.AddSection(projectId: project.projectData.data.id))
+                  ),
+                  db: db
+                )
               } label: {
                 Image(systemName: "plus")
               }
@@ -66,7 +71,12 @@ struct ProjectView: View {
                 matching: .images
               )
               .onChange(of: project.pickerItem) {
-                project.send(event: .HandleImagePicker(photoPicker: project.pickerItem), db: db)
+                store.send(
+                  event: .projects(
+                    .projectEvent(.HandleImagePicker(photoPicker: project.pickerItem))
+                  ),
+                  db: db
+                )
               }
           }
         }

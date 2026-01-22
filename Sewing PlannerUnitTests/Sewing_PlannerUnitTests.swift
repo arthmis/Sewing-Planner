@@ -87,7 +87,7 @@ struct Sewing_PlannerUnitTests {
       createDate: now,
       updateDate: now
     )
-    let event: ProjectEvent = .UpdateSectionName(section: newSectionName, oldName: section.name)
+    let event: ProjectsEvent = .UpdateSectionName(section: newSectionName, oldName: section.name)
     let effect = model.handleEvent(event)
 
     let expectedEffect: Effect = .updateSectionName(section: newSectionName, oldName: section.name)

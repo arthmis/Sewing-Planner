@@ -33,17 +33,36 @@ enum ProjectEvent {
   case ProjectError(ProjectError)
 }
 
-extension ProjectViewModel {
-  public func handleEvent(_ event: ProjectEvent) -> Effect? {
+enum ProjectsEvent {
+  case projectEvent(ProjectEvent)
+  case navigation
+}
+
+extension StateStore {
+  public func handleProjectsEvent(_ event: ProjectsEvent, state: ProjectsState) -> Effect? {
+    switch event {
+      case .projectEvent(let projectEvent):
+        guard let project = state.selectedProject else {
+          return nil
+        }
+
+        return handleProjectEvent(projectEvent, project: project)
+      case .navigation:
+        print("navigating")
+        return nil
+    }
+  }
+
+  public func handleProjectEvent(_ event: ProjectEvent, project: ProjectViewModel) -> Effect? {
     switch event {
 
       case .UpdatedProjectTitle(let newTitle):
-        projectData.data.name = newTitle
-        return Effect.updateProjectTitle(projectData: projectData.data)
+        project.projectData.data.name = newTitle
+        return Effect.updateProjectTitle(projectData: project.projectData.data)
 
       case .AddSection(let projectId):
         let now = Date()
-        let sectionsCount = self.projectData.sections.count
+        let sectionsCount = project.projectData.sections.count
         let sectionInput = SectionInputRecord(
           projectId: projectId,
           name: "Section \(sectionsCount + 1)",
@@ -54,29 +73,32 @@ extension ProjectViewModel {
 
       case .AddSectionToState(let sectionRecord):
         let section = Section(name: sectionRecord)
-        self.projectData.sections.append(section)
+        project.projectData.sections.append(section)
 
         return nil
 
       case .UpdateSectionName(let section, let oldName):
-        if let index = self.projectData.sections.firstIndex(where: { $0.section.id == section.id })
-        {
-          self.projectData.sections[index].section.name = section.name
+        if let index = project.projectData.sections.firstIndex(where: {
+          $0.section.id == section.id
+        }) {
+          project.projectData.sections[index].section.name = section.name
         }
         return .updateSectionName(section: section, oldName: oldName)
 
       case .markSectionForDeletion(let section):
-        if let index = self.projectData.sections.firstIndex(where: { $0.section.id == section.id })
-        {
-          self.projectData.sections[index].isBeingDeleted = true
+        if let index = project.projectData.sections.firstIndex(where: {
+          $0.section.id == section.id
+        }) {
+          project.projectData.sections[index].isBeingDeleted = true
         }
         return .deleteSection(section: section)
 
       case .RemoveSection(let sectionId):
-        self.projectData.sections.removeAll(where: {
+        project.projectData.sections.removeAll(where: {
           $0.section.id == sectionId && $0.isBeingDeleted
         })
-        self.projectData.cancelDeleteSection()
+        project.projectData.cancelDeleteSection()
+        return nil
 
       case .ProjectError(let error):
         switch error {
@@ -85,17 +107,17 @@ extension ProjectViewModel {
           case .addSectionItem:
             break
           case .deleteImages:
-            self.projectImages.cancelDeleteMode()
-            self.handleError(error: error)
+            project.projectImages.cancelDeleteMode()
+            project.handleError(error: error)
             break
           case .deleteSection(let section):
-            if let index = self.projectData.sections.firstIndex(where: {
+            if let index = project.projectData.sections.firstIndex(where: {
               $0.section.id == section.id
             }) {
-              self.projectData.sections[index].isBeingDeleted = false
+              project.projectData.sections[index].isBeingDeleted = false
             }
-            self.projectData.cancelDeleteSection()
-            self.handleError(error: error)
+            project.projectData.cancelDeleteSection()
+            project.handleError(error: error)
 
           case .deleteSectionItems:
             break
@@ -110,28 +132,29 @@ extension ProjectViewModel {
           case .renameProject:
             break
           case .renameSectionName(let sectionId, let originalName):
-            if let index = self.projectData.sections.firstIndex(where: {
+            if let index = project.projectData.sections.firstIndex(where: {
               $0.section.id == sectionId
             }) {
-              self.projectData.sections[index].section.name = originalName
+              project.projectData.sections[index].section.name = originalName
             }
-            self.handleError(error: error)
+            project.handleError(error: error)
           case .updateSectionItemCompletion:
             break
           case .updateSectionItemText:
             break
         }
+        return nil
 
       case .StoreSectionItem(let text, let note, let sectionId):
         guard
-          let index = self.projectData.sections.firstIndex(where: { section in
+          let index = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
           })
         else {
           // TODO log an error here because this shouldn't be possible
           return nil
         }
-        let order = self.projectData.sections[index].items.count
+        let order = project.projectData.sections[index].items.count
         return .SaveSectionItem(
           text: text.trimmingCharacters(in: .whitespacesAndNewlines),
           note: note,
@@ -141,14 +164,14 @@ extension ProjectViewModel {
 
       case .AddSectionItem(let item, let sectionId):
         guard
-          let index = self.projectData.sections.firstIndex(where: { section in
+          let index = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
           })
         else {
           // TODO log an error here because this shouldn't be possible
           return nil
         }
-        self.projectData.sections[index].items.append(item)
+        project.projectData.sections[index].items.append(item)
         return nil
 
       case .StoreUpdatedSectionItemText(item: let sectionItem, let sectionId):
@@ -164,7 +187,7 @@ extension ProjectViewModel {
 
       case .UpdateSectionItemText(let updatedItem, let sectionId):
         guard
-          let index = self.projectData.sections.firstIndex(where: { section in
+          let index = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
           })
         else {
@@ -174,7 +197,7 @@ extension ProjectViewModel {
         }
 
         guard
-          let itemIndex = self.projectData.sections[index].items.firstIndex(where: {
+          let itemIndex = project.projectData.sections[index].items.firstIndex(where: {
             $0.record.id == updatedItem.record.id
           })
         else {
@@ -182,7 +205,7 @@ extension ProjectViewModel {
           return nil
         }
 
-        self.projectData.sections[index].items[itemIndex] = updatedItem
+        project.projectData.sections[index].items[itemIndex] = updatedItem
         return nil
 
       case .toggleSectionItemCompletionStatus(var updatedItem, let sectionId):
@@ -190,7 +213,7 @@ extension ProjectViewModel {
         return .SaveSectionItemUpdate(updatedItem, sectionId: sectionId)
       case .UpdateSectionItem(let updatedItem, let sectionId):
         guard
-          let index = self.projectData.sections.firstIndex(where: { section in
+          let index = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
           })
         else {
@@ -200,7 +223,7 @@ extension ProjectViewModel {
         }
 
         guard
-          let itemIndex = self.projectData.sections[index].items.firstIndex(where: {
+          let itemIndex = project.projectData.sections[index].items.firstIndex(where: {
             $0.record.id == updatedItem.id
           })
         else {
@@ -208,12 +231,12 @@ extension ProjectViewModel {
           return nil
         }
 
-        self.projectData.sections[index].items[itemIndex].record = updatedItem
+        project.projectData.sections[index].items[itemIndex].record = updatedItem
         return nil
 
       case .toggleSelectedSectionItem(let itemId, let sectionId):
         guard
-          let sectionIndex = self.projectData.sections.firstIndex(where: { section in
+          let sectionIndex = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
           })
         else {
@@ -222,17 +245,17 @@ extension ProjectViewModel {
           return nil
         }
 
-        if self.projectData.sections[sectionIndex].selectedItems.contains(itemId) {
-          self.projectData.sections[sectionIndex].selectedItems.remove(itemId)
+        if project.projectData.sections[sectionIndex].selectedItems.contains(itemId) {
+          project.projectData.sections[sectionIndex].selectedItems.remove(itemId)
         } else {
-          self.projectData.sections[sectionIndex].selectedItems.insert(itemId)
+          project.projectData.sections[sectionIndex].selectedItems.insert(itemId)
         }
 
         return nil
 
       case .deleteSelectedTasks(let selectedIds, let sectionId):
         guard
-          let sectionIndex = self.projectData.sections.firstIndex(where: { section in
+          let sectionIndex = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
           })
         else {
@@ -241,7 +264,7 @@ extension ProjectViewModel {
           return nil
         }
         var selected: [SectionItem] = []
-        for item in self.projectData.sections[sectionIndex].items {
+        for item in project.projectData.sections[sectionIndex].items {
           if selectedIds.contains(item.record.id) {
             selected.append(item)
           }
@@ -250,7 +273,7 @@ extension ProjectViewModel {
 
       case .removeDeletedSectionItems(let deletedIds, let sectionId):
         guard
-          let sectionIndex = self.projectData.sections.firstIndex(where: { section in
+          let sectionIndex = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
           })
         else {
@@ -258,65 +281,64 @@ extension ProjectViewModel {
           // or even panic
           return nil
         }
-        let updatedItems = self.projectData.sections[sectionIndex].items.filter({
+        let updatedItems = project.projectData.sections[sectionIndex].items.filter({
           !deletedIds.contains($0.record.id)
         })
         withAnimation(.easeOut(duration: 0.12)) {
-          self.projectData.sections[sectionIndex].items = updatedItems
-          self.projectData.sections[sectionIndex].isEditingSection = false
-          self.projectData.sections[sectionIndex].selectedItems.removeAll()
+          project.projectData.sections[sectionIndex].items = updatedItems
+          project.projectData.sections[sectionIndex].isEditingSection = false
+          project.projectData.sections[sectionIndex].selectedItems.removeAll()
         }
         return nil
 
       case .HandleImagePicker(let photoPicker):
-        return .HandleImagePicker(photoPicker: photoPicker, projectId: self.projectData.data.id)
+        return .HandleImagePicker(photoPicker: photoPicker, projectId: project.projectData.data.id)
 
       case .AddImage(let projectImage):
-        self.projectImages.images.append(projectImage)
+        project.projectImages.images.append(projectImage)
         return nil
 
       case .ShowDeleteImagesView(let initialSelectedImagePath):
-        self.projectImages.setDeleteMode(true)
-        self.projectImages.selectedImages.insert(initialSelectedImagePath)
+        project.projectImages.setDeleteMode(true)
+        project.projectImages.selectedImages.insert(initialSelectedImagePath)
 
         return nil
 
       case .DeleteImages:
-        if self.projectImages.selectedImagesIsEmpty {
+        if project.projectImages.selectedImagesIsEmpty {
           return nil
         }
 
-        for imageId in self.projectImages.selectedImages {
-          if let index = self.projectImages.images.firstIndex(where: { $0.record.id == imageId }) {
-            let image = self.projectImages.images.remove(at: index)
-            self.projectImages.deletedImages.append(image)
+        for imageId in project.projectImages.selectedImages {
+          if let index = project.projectImages.images.firstIndex(where: { $0.record.id == imageId })
+          {
+            let image = project.projectImages.images.remove(at: index)
+            project.projectImages.deletedImages.append(image)
           }
         }
-        return .DeleteImages(self.projectImages.deletedImages, projectId: self.projectData.data.id)
+        return .DeleteImages(
+          project.projectImages.deletedImages,
+          projectId: project.projectData.data.id
+        )
 
       case .CompleteImageDeletion:
-        self.projectImages.cancelDeleteMode()
-        self.projectImages.deletedImages.removeAll()
+        project.projectImages.cancelDeleteMode()
+        project.projectImages.deletedImages.removeAll()
         return nil
 
       case .CancelImageDeletion:
-        self.projectImages.cancelDeleteMode()
+        project.projectImages.cancelDeleteMode()
         return nil
 
       case .ToggleImageSelection(let imageId):
-        if !self.projectImages.selectedImages.contains(imageId) {
-          self.projectImages.selectedImages.insert(imageId)
+        if !project.projectImages.selectedImages.contains(imageId) {
+          project.projectImages.selectedImages.insert(imageId)
         } else {
-          self.projectImages.selectedImages.remove(imageId)
+          project.projectImages.selectedImages.remove(imageId)
         }
+
+        return nil
     }
-
-    return nil
-  }
-
-  func send(event: ProjectEvent, db: AppDatabase) {
-    let effect = handleEvent(event)
-    handleEffect(effect: effect, db: db)
   }
 
 }

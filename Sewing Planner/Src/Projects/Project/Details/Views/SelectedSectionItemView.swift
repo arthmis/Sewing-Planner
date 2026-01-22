@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SelectedSectionItemView: View {
-  @Environment(ProjectViewModel.self) var project
+  @Environment(StateStore.self) var store
   @Environment(\.db) var db
   @Binding var data: SectionItem
   @State var newText = ""
@@ -17,8 +17,10 @@ struct SelectedSectionItemView: View {
   }
 
   func toggleCompletedState() {
-    project.send(
-      event: .toggleSectionItemCompletionStatus(data.record, sectionId: sectionId),
+    store.send(
+      event: .projects(
+        .projectEvent(.toggleSectionItemCompletionStatus(data.record, sectionId: sectionId))
+      ),
       db: db
     )
   }
@@ -45,8 +47,12 @@ struct SelectedSectionItemView: View {
     .background(isSelected ? Color.blue.opacity(0.5) : Color.white)
     .clipShape(RoundedRectangle(cornerRadius: 8))
     .onTapGesture {
-      project.send(
-        event: .toggleSelectedSectionItem(withId: data.record.id, fromSectionWithId: sectionId),
+      store.send(
+        event: .projects(
+          .projectEvent(
+            .toggleSelectedSectionItem(withId: data.record.id, fromSectionWithId: sectionId)
+          )
+        ),
         db: db
       )
     }

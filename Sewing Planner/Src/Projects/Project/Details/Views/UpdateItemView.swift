@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct UpdateItemView: View {
-  @Environment(ProjectViewModel.self) var project
+  @Environment(StateStore.self) var store
   @Environment(\.db) var db
   @Binding var data: SectionItem
   @Binding var isEditing: Bool
@@ -35,27 +35,39 @@ struct UpdateItemView: View {
       var updatedSectionItem = data
       updatedSectionItem.note?.text = validNoteText
       updatedSectionItem.record.text = validText
-      project.send(
-        event: .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId),
+      store.send(
+        event: .projects(
+          .projectEvent(
+            .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId)
+          )
+        ),
         db: db
       )
     } else {
       if let note = noteText {
         var updatedItem = data.record
         updatedItem.text = validText
-        project.send(
-          event: .StoreUpdatedSectionItemTextWithNewNote(
-            item: updatedItem,
-            newNote: note,
-            sectionId: sectionId
+        store.send(
+          event: .projects(
+            .projectEvent(
+              .StoreUpdatedSectionItemTextWithNewNote(
+                item: updatedItem,
+                newNote: note,
+                sectionId: sectionId
+              )
+            )
           ),
           db: db
         )
       } else {
         var updatedSectionItem = data
         updatedSectionItem.record.text = validText
-        project.send(
-          event: .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId),
+        store.send(
+          event: .projects(
+            .projectEvent(
+              .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId)
+            )
+          ),
           db: db
         )
       }

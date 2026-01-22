@@ -106,7 +106,7 @@ enum FabricsEvent {
 }
 
 extension StateStore {
-  func handleFabricsEvent(event: FabricsEvent, state: FabricsState) -> Effect? {
+  func handleFabricsEvent(_ event: FabricsEvent, state: FabricsState) -> Effect? {
     switch event {
       case .storeFabric(let fabricInput):
         let now = Date.now

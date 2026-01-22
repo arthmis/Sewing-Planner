@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct EmptyProjectCallToActionView: View {
-  @Environment(ProjectViewModel.self) var project
+  @Environment(StateStore.self) var store
   @Environment(\.db) var db
 
   var body: some View {
@@ -19,7 +19,10 @@ struct EmptyProjectCallToActionView: View {
       .font(.system(size: 16))
       .padding(.top, 8)
       Button("Create new section") {
-        project.send(event: .AddSection(projectId: project.projectData.data.id), db: db)
+        guard let projectId = store.projectsState.selectedProject?.projectData.data.id else {
+          return
+        }
+        store.send(event: .projects(.projectEvent(.AddSection(projectId: projectId))), db: db)
       }
       .buttonStyle(PrimaryButtonStyle(fontSize: 16))
       .padding(.top, 28)

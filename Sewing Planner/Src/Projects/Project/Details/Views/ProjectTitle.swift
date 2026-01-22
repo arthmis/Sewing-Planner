@@ -9,7 +9,7 @@ import GRDB
 import SwiftUI
 
 struct ProjectTitle: View {
-  @Environment(ProjectViewModel.self) var project
+  @Environment(StateStore.self) var store
   @Environment(\.db) var db
   var projectData: ProjectMetadata
   @State var bindedName: String
@@ -29,7 +29,7 @@ struct ProjectTitle: View {
       return
     }
 
-    project.send(event: .UpdatedProjectTitle(sanitizedName), db: db)
+    store.send(event: .projects(.projectEvent(.UpdatedProjectTitle(sanitizedName))), db: db)
     isEditing = false
   }
   var body: some View {

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AddItemView: View {
-  @Environment(ProjectViewModel.self) var project
+  @Environment(StateStore.self) var store
   @Environment(\.db) var db
   @Binding var isAddingItem: Bool
   @State var newItem = ""
@@ -30,8 +30,10 @@ struct AddItemView: View {
     let validText = newItem.trimmingCharacters(in: .whitespacesAndNewlines)
     let validNoteText = itemNote.trimmingCharacters(in: .whitespacesAndNewlines)
     let noteText = validNoteText.isEmpty ? nil : validNoteText
-    project.send(
-      event: .StoreSectionItem(text: validText, note: noteText, sectionId: sectionId),
+    store.send(
+      event: .projects(
+        .projectEvent(.StoreSectionItem(text: validText, note: noteText, sectionId: sectionId))
+      ),
       db: db
     )
     showErrorText = false

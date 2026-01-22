@@ -11,7 +11,7 @@ import SwiftUI
 
 struct ImagesView: View {
   @Environment(\.db) private var db
-  @Environment(ProjectViewModel.self) private var project
+  @Environment(StateStore.self) private var store
   @Binding var model: ProjectImages
   @State var showDeleteImagesDialog = false
   @Namespace var transitionNamespace
@@ -44,8 +44,12 @@ struct ImagesView: View {
               if !model.inDeleteMode {
                 ImageButton(image: image, selectedImage: $model.overlayedImage)
                   .onLongPressGesture {
-                    project.send(
-                      event: .ShowDeleteImagesView(initialSelectedImageId: image.record.id),
+                    store.send(
+                      event: .projects(
+                        .projectEvent(
+                          .ShowDeleteImagesView(initialSelectedImageId: image.record.id)
+                        )
+                      ),
                       db: db
                     )
                   }
@@ -67,7 +71,7 @@ struct ImagesView: View {
       isPresented: $showDeleteImagesDialog
     ) {
       Button("Delete", role: .destructive) {
-        project.send(event: .DeleteImages, db: db)
+        store.send(event: .projects(.projectEvent(.DeleteImages)), db: db)
       }
       Button("Cancel", role: .cancel) {
         showDeleteImagesDialog = false
@@ -92,7 +96,8 @@ struct ImagesView: View {
       do {
         try await model.loadProjectImages(db: db)
       } catch {
-        project.handleError(error: .loadImages)
+        // todo: handle this error through events
+        store.projectsState.selectedProject?.handleError(error: .loadImages)
       }
     }
   }

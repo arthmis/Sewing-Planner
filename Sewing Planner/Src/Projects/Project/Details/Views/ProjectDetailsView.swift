@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct ProjectDataView: View {
-  @Environment(ProjectViewModel.self) var project
+  @Environment(StateStore.self) var store
   @Environment(\.db) var db
+  @Binding var projectData: ProjectData
 
   var body: some View {
-    @Bindable var projectBinding = project
     VStack(alignment: .leading) {
-      if project.projectData.sections.isEmpty {
+      if projectData.sections.isEmpty {
         EmptyProjectCallToActionView()
         Spacer()
       } else {
@@ -22,14 +22,14 @@ struct ProjectDataView: View {
           VStack(alignment: .leading) {
             HStack {
               ProjectTitle(
-                projectData: projectBinding.projectData.data,
-                bindedName: projectBinding.projectData.bindedName,
+                projectData: projectData.data,
+                bindedName: projectData.bindedName,
               )
               Spacer()
             }
             .frame(maxWidth: .infinity)
             .padding(.bottom, 25)
-            ForEach($projectBinding.projectData.sections, id: \.section.id) {
+            ForEach($projectData.sections, id: \.section.id) {
               $section in
               SectionView(model: $section, db: db)
                 .padding(.bottom, 16)
@@ -42,39 +42,42 @@ struct ProjectDataView: View {
     .padding([.leading, .trailing], 8)
     .confirmationDialog(
       "Delete Section",
-      isPresented: $projectBinding.projectData.showDeleteSectionDialog
+      isPresented: $projectData.showDeleteSectionDialog
     ) {
       Button("Delete", role: .destructive) {
-        if let sectionToDelete = project.projectData.selectedSectionForDeletion {
-          project.send(event: .markSectionForDeletion(sectionToDelete), db: db)
+        if let sectionToDelete = projectData.selectedSectionForDeletion {
+          store.send(
+            event: .projects(.projectEvent(.markSectionForDeletion(sectionToDelete))),
+            db: db
+          )
         }
       }
       Button("Cancel", role: .cancel) {
-        project.projectData.cancelDeleteSection()
+        projectData.cancelDeleteSection()
       }
     } message: {
-      if let section = project.projectData.selectedSectionForDeletion {
+      if let section = projectData.selectedSectionForDeletion {
         Text("Delete \(section.name)")
       }
     }
   }
 }
 
-#Preview {
-  let viewModel = ProjectViewModel(
-    data: ProjectData(
-      data: ProjectMetadata(
-        id: 1,
-        name: "Project Name",
-        completed: false,
-        createDate: Date(),
-        updateDate: Date()
-      )
-    ),
-    projectsNavigation: [],
-    projectImages: ProjectImages(projectId: 1)
-  )
-  ProjectDataView()
-    .environment(viewModel)
+// #Preview {
+//   @State static var viewModel = ProjectViewModel(
+//     data: ProjectData(
+//       data: ProjectMetadata(
+//         id: 1,
+//         name: "Project Name",
+//         completed: false,
+//         createDate: Date(),
+//         updateDate: Date()
+//       )
+//     ),
+//     projectsNavigation: [],
+//     projectImages: ProjectImages(projectId: 1)
+//   )
+//   ProjectDataView(projectData: viewModel.projectData)
+//     .environment(viewModel)
 
-}
+// }
