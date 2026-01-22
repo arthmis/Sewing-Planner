@@ -3,10 +3,8 @@ import SwiftUI
 @Observable
 class StashState {
   var fabrics: FabricsState
-  let db: AppDatabase
 
-  init(db: AppDatabase) {
+  init() {
     fabrics = FabricsState()
-    self.db = db
   }
 }

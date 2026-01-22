@@ -3,6 +3,7 @@ import PhotosUI
 import SwiftUI
 
 enum Effect {
+  case createProject
   case AddNewSection(section: SectionInputRecord)
   case deleteSection(section: SectionRecord)
   case updateProjectTitle(projectData: ProjectMetadata)

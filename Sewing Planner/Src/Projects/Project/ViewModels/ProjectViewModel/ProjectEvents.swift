@@ -36,6 +36,9 @@ enum ProjectEvent {
 enum ProjectsEvent {
   case projectEvent(ProjectEvent)
   case navigation
+  case createProject
+  case addProjectToState(ProjectMetadata)
+
 }
 
 extension StateStore {
@@ -50,6 +53,13 @@ extension StateStore {
       case .navigation:
         print("navigating")
         return nil
+      case .createProject:
+        return .createProject
+
+      case .addProjectToState(let newProject):
+        state.navigation.append(newProject)
+        return nil
+
     }
   }
 

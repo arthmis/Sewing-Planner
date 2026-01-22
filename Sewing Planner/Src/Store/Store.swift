@@ -10,8 +10,8 @@ class StateStore {
   let db: AppDatabase
 
   init(db: AppDatabase) {
-    projectsState = ProjectsState(db: db)
-    stashState = StashState(db: db)
+    projectsState = ProjectsState()
+    stashState = StashState()
     self.db = db
   }
 
@@ -57,6 +57,7 @@ extension StateStore {
             // todo: handle app error
           }
         }
+
       case .retrieveAllFabrics:
         Task {
           do {
@@ -70,6 +71,29 @@ extension StateStore {
             }
           }
         }
+
+      case .createProject:
+        Task {
+          do {
+            let newProject = try await db.getWriter().write { db in
+              var newProjectInput = ProjectMetadataInput()
+              try newProjectInput.save(db)
+
+              return ProjectMetadata(from: newProjectInput)
+            }
+            try await MainActor.run {
+              _ = self.handleEvent(.projects(.addProjectToState(newProject)))
+              // TODO update this so it can be updated asynchronously
+              // it shouldn't be necessary to run this on the main thread, might need a bigger refactor
+              // also handle the dual write problem, possible to save project but not update the shared list of
+              // projects in the file
+              try self.projectsState.updateShareExtensionProjectList(project: newProject)
+            }
+          } catch {
+            throw AppError.addProject
+          }
+        }
+
       case .AddNewSection(let sectionInput):
         Task {
           do {

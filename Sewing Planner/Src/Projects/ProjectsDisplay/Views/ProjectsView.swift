@@ -118,7 +118,8 @@ struct ProjectsView: View {
         HStack {
           Button("New Project") {
             do {
-              try store.projectsState.addProject()
+              store.send(event: .projects(.createProject), db: appDatabase)
+              // todo move this into the effects handling
               if !(settings.getUserCreatedProjectFirstTime() ?? false) {
                 do {
                   try settings.userCreatedProjectFirstTime(val: true)
