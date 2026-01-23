@@ -11,7 +11,9 @@ import SwiftUI
 
 struct ImagesView: View {
   @Environment(\.db) private var db
+  @Environment(\.dismiss) var dismiss
   @Environment(StateStore.self) private var store
+  @Environment(ProjectViewModel.self) private var project
   @Binding var model: ProjectImages
   @State var showDeleteImagesDialog = false
   @Namespace var transitionNamespace
@@ -65,6 +67,38 @@ struct ImagesView: View {
         }
       }
     }
+    .toolbar {
+      @Bindable var projectBinding = project
+
+      ToolbarItem(placement: .navigation) {
+        BackButton {
+          dismiss()
+        }
+      }
+
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          project.showPhotoPickerView()
+        } label: {
+          Image(systemName: "photo.badge.plus")
+        }
+        .buttonStyle(AddImageButtonStyle())
+        .photosPicker(
+          isPresented: $projectBinding.showPhotoPicker,
+          selection: $projectBinding.pickerItem,
+          matching: .images
+        )
+        .onChange(of: project.pickerItem) {
+          store.send(
+            event: .projects(
+              .projectEvent(.HandleImagePicker(photoPicker: project.pickerItem))
+            ),
+            db: db
+          )
+        }
+      }
+    }
+    .navigationBarBackButtonHidden()
     .padding([.horizontal, .bottom], 8)
     .confirmationDialog(
       "Delete Images",

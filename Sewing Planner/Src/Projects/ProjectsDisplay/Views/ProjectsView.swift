@@ -7,10 +7,11 @@
 
 import SwiftUI
 
-// enum Navigation {
-//    case allProjects
-//    case Project(ProjectViewModel)
-// }
+enum ProjectsNavigation: Hashable {
+  case allProjects
+  case project(Int64)
+  case projectImages(Int64)
+}
 
 let UserCreatedOneProject: String = "CreatedOneProject"
 
@@ -63,13 +64,28 @@ struct ProjectsView: View {
             }
           }
         }
-        .navigationDestination(for: ProjectMetadata.self) { _ in
-          VStack {
-            LoadProjectView(
-              projectsNavigation: $storeBinding.projectsState.navigation,
-              fetchProjects: fetchProjects
-            )
+        .navigationDestination(for: ProjectsNavigation.self) { data in
+          switch data {
+            case .allProjects:
+              VStack {
+                LoadProjectView(
+                  projectsNavigation: $storeBinding.projectsState.navigation,
+                  fetchProjects: fetchProjects
+                )
+              }
+            case .project(_):
+              LoadProjectView(
+                projectsNavigation: $storeBinding.projectsState.navigation,
+                fetchProjects: fetchProjects
+              )
+            case .projectImages(_):
+              if let project = store.projectsState.selectedProject {
+                @Bindable var project = project
+                ImagesView(model: $project.projectImages)
+                  .environment(project)
+              }
           }
+
         }
 
         HStack {
@@ -83,11 +99,6 @@ struct ProjectsView: View {
                 // TODO: log error
                 print(error)
               }
-            } catch AppError.addProject {
-              store.appError = .addProject
-            } catch {
-              store.appError = .unexpectedError
-              print(error)
             }
           }
           .buttonStyle(PrimaryButtonStyle())

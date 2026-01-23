@@ -6,7 +6,7 @@ class StateStore {
   var projectsState: ProjectsState
   var stashState: StashState
   var appError: AppError?
-  var appSection: AppSection = .stash
+  var appSection: AppSection = .projects
 
   init(projectsState: ProjectsState? = nil) {
     self.projectsState = projectsState ?? ProjectsState()
@@ -16,6 +16,11 @@ class StateStore {
 }
 
 extension StateStore {
+  func send(event: AppEvent, db: AppDatabase) {
+    let effect = handleEvent(event)
+    handleEffect(effect: effect, db: db)
+  }
+
   public func handleEvent(_ event: AppEvent) -> Effect? {
     switch event {
       case .fabrics(let event):
@@ -23,11 +28,6 @@ extension StateStore {
       case .projects(let event):
         return handleProjectsEvent(event, state: self.projectsState)
     }
-  }
-
-  func send(event: AppEvent, db: AppDatabase) {
-    let effect = handleEvent(event)
-    handleEffect(effect: effect, db: db)
   }
 
 }

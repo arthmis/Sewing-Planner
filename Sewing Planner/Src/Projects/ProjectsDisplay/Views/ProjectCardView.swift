@@ -3,7 +3,7 @@ import SwiftUI
 struct ProjectCardView: View {
   @Environment(StateStore.self) private var store
   var projectData: ProjectCardViewModel
-  @Binding var projectsNavigation: [ProjectMetadata]
+  @Binding var projectsNavigation: [ProjectsNavigation]
 
   var body: some View {
     HStack {
@@ -40,7 +40,7 @@ struct ProjectCardView: View {
     )
     .padding(8)
     .onTapGesture {
-      projectsNavigation.append(projectData.project)
+      projectsNavigation.append(.project(projectData.project.id))
     }
   }
 }

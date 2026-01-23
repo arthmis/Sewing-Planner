@@ -57,7 +57,7 @@ extension StateStore {
         return .createProject
 
       case .addProjectToState(let newProject):
-        state.navigation.append(newProject)
+        state.navigation.append(.project(newProject.id))
         return nil
 
     }
@@ -65,7 +65,6 @@ extension StateStore {
 
   public func handleProjectEvent(_ event: ProjectEvent, project: ProjectViewModel) -> Effect? {
     switch event {
-
       case .UpdatedProjectTitle(let newTitle):
         project.projectData.data.name = newTitle
         return Effect.updateProjectTitle(projectData: project.projectData.data)

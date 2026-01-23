@@ -3,7 +3,7 @@ import SwiftUI
 @Observable
 class ProjectsState {
   var projects: ProjectsViewModel
-  var navigation: [ProjectMetadata] = []
+  var navigation: [ProjectsNavigation] = []
   var selectedProject: ProjectViewModel?
 
   init(selectedProject: ProjectViewModel? = nil) {

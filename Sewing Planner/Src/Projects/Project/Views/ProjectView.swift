@@ -15,73 +15,43 @@ struct ProjectView: View {
   @Environment(\.db) private var db
   @Environment(StateStore.self) private var store
   @State var project: ProjectViewModel
-  @Binding var projectsNavigation: [ProjectMetadata]
+  @Binding var projectsNavigation: [ProjectsNavigation]
   let fetchProjects: () -> Void
 
   var body: some View {
     VStack {
-      TabView(selection: $project.currentView) {
-        Tab(
-          "Details",
-          systemImage: "list.bullet.rectangle.portrait",
-          value: .details
-        ) {
-          ProjectDataView(projectData: $project.projectData)
-        }
-        Tab("Images", systemImage: "photo.artframe", value: .images) {
-          ImagesView(model: $project.projectImages)
-        }
+      Button("Images") {
+        projectsNavigation.append(.projectImages(project.projectData.data.id))
       }
-      .navigationBarBackButtonHidden(true)
-      .toolbar {
-        ToolbarItem(placement: .navigation) {
-          BackButton {
-            dismiss()
-            store.projectsState.selectedProject = nil
-            fetchProjects()
-          }
-        }
-      }.toolbar {
-        ToolbarItem(placement: .primaryAction) {
-          switch project.currentView {
-            case .details:
-              Button {
-                store.send(
-                  event: .projects(
-                    .projectEvent(.AddSection(projectId: project.projectData.data.id))
-                  ),
-                  db: db
-                )
-              } label: {
-                Image(systemName: "plus")
-              }
-              .buttonStyle(AddNewSectionButtonStyle())
-              .accessibilityIdentifier("AddNewSectionButton")
-
-            case .images:
-              Button {
-                project.showPhotoPickerView()
-              } label: {
-                Image(systemName: "photo.badge.plus")
-              }
-              .buttonStyle(AddImageButtonStyle())
-              .photosPicker(
-                isPresented: $project.showPhotoPicker,
-                selection: $project.pickerItem,
-                matching: .images
-              )
-              .onChange(of: project.pickerItem) {
-                store.send(
-                  event: .projects(
-                    .projectEvent(.HandleImagePicker(photoPicker: project.pickerItem))
-                  ),
-                  db: db
-                )
-              }
-          }
+      ProjectDataView(projectData: $project.projectData)
+    }
+    .toolbar {
+      ToolbarItem(placement: .navigation) {
+        BackButton {
+          // dismiss()
+          projectsNavigation.removeAll()
+          store.projectsState.selectedProject = nil
+          fetchProjects()
         }
       }
     }
+    .toolbar {
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          store.send(
+            event: .projects(
+              .projectEvent(.AddSection(projectId: project.projectData.data.id))
+            ),
+            db: db
+          )
+        } label: {
+          Image(systemName: "plus")
+        }
+        .buttonStyle(AddNewSectionButtonStyle())
+        .accessibilityIdentifier("AddNewSectionButton")
+      }
+    }
+    .navigationBarBackButtonHidden()
     .overlay(alignment: .top) {
       Toast(showToast: $project.projectError)
         .padding(.horizontal, 16)

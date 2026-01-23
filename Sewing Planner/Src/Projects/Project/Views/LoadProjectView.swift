@@ -5,7 +5,7 @@ struct LoadProjectView: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.db) private var appDatabase
   @Environment(StateStore.self) private var store
-  @Binding var projectsNavigation: [ProjectMetadata]
+  @Binding var projectsNavigation: [ProjectsNavigation]
   let fetchProjects: () -> Void
   // @State var isLoading = true
 
@@ -30,7 +30,7 @@ struct LoadProjectView: View {
     //            NSApplication.shared.keyWindow?.makeFirstResponder(nil)
     //        }
     .onAppear {
-      if let id = projectsNavigation.last?.id {
+      if case .project(let id) = projectsNavigation.last {
         do {
           let maybeProjectData = try ProjectData.getProject(
             with: id,

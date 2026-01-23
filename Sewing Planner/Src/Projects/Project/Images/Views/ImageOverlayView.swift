@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ImageOverlayView: View {
   @Environment(\.db) private var db
-  @Environment(ProjectViewModel.self) private var project
   @Binding var model: ProjectImages
   let item: OverlayedImage
 

@@ -5,7 +5,7 @@ import SwiftUI
 @Observable @MainActor
 final class ProjectViewModel {
   var projectData: ProjectData
-  var projectsNavigation: [ProjectMetadata]
+  var projectsNavigation: [ProjectsNavigation]
   var projectImages: ProjectImages
   var currentView = CurrentView.details
   var name = ""
@@ -18,7 +18,7 @@ final class ProjectViewModel {
 
   init(
     data: ProjectData,
-    projectsNavigation: [ProjectMetadata],
+    projectsNavigation: [ProjectsNavigation],
     projectImages: ProjectImages
   ) {
     projectData = data
