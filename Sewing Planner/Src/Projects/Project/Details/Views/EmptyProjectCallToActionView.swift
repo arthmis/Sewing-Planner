@@ -22,7 +22,12 @@ struct EmptyProjectCallToActionView: View {
         guard let projectId = store.projectsState.selectedProject?.projectData.data.id else {
           return
         }
-        store.send(event: .projects(.projectEvent(.AddSection(projectId: projectId))), db: db)
+        store.send(
+          event: .projects(
+            .projectEvent(projectId: projectId, .StoreNewSection(projectId: projectId))
+          ),
+          db: db
+        )
       }
       .buttonStyle(PrimaryButtonStyle(fontSize: 16))
       .padding(.top, 28)

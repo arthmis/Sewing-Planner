@@ -91,6 +91,7 @@ struct ImageButton: View {
 struct SelectedImageButton: View {
   @Environment(\.db) private var db
   @Environment(StateStore.self) private var store
+  @Environment(ProjectViewModel.self) var project
   @State var isHovering = false
   @Binding var image: ProjectImage
   @Binding var selectedImagesForDeletion: Set<Int64>
@@ -130,7 +131,12 @@ struct SelectedImageButton: View {
         }
         .onTapGesture {
           store.send(
-            event: .projects(.projectEvent(.ToggleImageSelection(imageId: image.record.id))),
+            event: .projects(
+              .projectEvent(
+                projectId: project.projectData.data.id,
+                .ToggleImageSelection(imageId: image.record.id)
+              )
+            ),
             db: db
           )
         }

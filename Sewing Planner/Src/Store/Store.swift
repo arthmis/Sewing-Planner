@@ -92,7 +92,7 @@ extension StateStore {
           }
         }
 
-      case .AddNewSection(let sectionInput):
+      case .StoreNewSection(let sectionInput):
         Task {
           do {
             let record = try await db.getWriter().write { [sectionInput] db in
@@ -102,12 +102,24 @@ extension StateStore {
             let sectionRecord = SectionRecord(from: record)
             await MainActor.run {
               _ = self.handleEvent(
-                .projects(.projectEvent(.AddSectionToState(section: sectionRecord)))
+                .projects(
+                  .projectEvent(
+                    projectId: sectionRecord.projectId,
+                    .AddNewSection(section: sectionRecord)
+                  )
+                )
               )
             }
           } catch {
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.ProjectError(ProjectError.addSection))))
+              _ = self.handleEvent(
+                .projects(
+                  .projectEvent(
+                    projectId: sectionInput.projectId,
+                    .ProjectError(ProjectError.addSection)
+                  )
+                )
+              )
             }
           }
         }
@@ -117,11 +129,20 @@ extension StateStore {
           do {
             try await db.deleteProjectSection(section: section)
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.RemoveSection(section.id))))
+              _ = self.handleEvent(
+                .projects(.projectEvent(projectId: section.projectId, .RemoveSection(section.id)))
+              )
             }
           } catch {
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.deleteSection(section)))))
+              _ = self.handleEvent(
+                .projects(
+                  .projectEvent(
+                    projectId: section.projectId,
+                    .ProjectError(.deleteSection(section))
+                  )
+                )
+              )
             }
           }
         }
@@ -151,6 +172,7 @@ extension StateStore {
               _ = self.handleEvent(
                 .projects(
                   .projectEvent(
+                    projectId: section.projectId,
                     .ProjectError(.renameSectionName(sectionId: section.id, originalName: oldName))
                   )
                 )
@@ -162,7 +184,7 @@ extension StateStore {
 
       case .doNothing:
         return
-      case .SaveSectionItem(let text, let note, let order, let sectionId):
+      case .SaveSectionItem(let text, let note, let order, let sectionId, let projectId):
         Task {
           do {
             let sectionItem: SectionItem = try await db.getWriter().write { db in
@@ -191,18 +213,25 @@ extension StateStore {
 
             await MainActor.run {
               _ = self.handleEvent(
-                .projects(.projectEvent(.AddSectionItem(item: sectionItem, sectionId: sectionId)))
+                .projects(
+                  .projectEvent(
+                    projectId: projectId,
+                    .StoreNewSectionItem(item: sectionItem, sectionId: sectionId)
+                  )
+                )
               )
             }
           } catch {
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.addSectionItem))))
+              _ = self.handleEvent(
+                .projects(.projectEvent(projectId: projectId, .ProjectError(.addSectionItem)))
+              )
             }
           }
         }
         return
 
-      case .SaveSectionItemTextUpdate(let item, let sectionId):
+      case .SaveSectionItemTextUpdate(let item, let sectionId, let projectId):
         Task {
           do {
             try await db.getWriter().write { db in
@@ -212,16 +241,25 @@ extension StateStore {
 
             await MainActor.run {
               _ = self.handleEvent(
-                .projects(.projectEvent(.UpdateSectionItemText(item: item, sectionId: sectionId)))
+                .projects(
+                  .projectEvent(
+                    projectId: projectId,
+                    .UpdateSectionItemText(item: item, sectionId: sectionId)
+                  )
+                )
               )
             }
           } catch {
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.updateSectionItemText))))
+              _ = self.handleEvent(
+                .projects(
+                  .projectEvent(projectId: projectId, .ProjectError(.updateSectionItemText))
+                )
+              )
             }
           }
         }
-      case .SaveSectionItemUpdateWithNewNote(let item, let newNote, let sectionId):
+      case .SaveSectionItemUpdateWithNewNote(let item, let newNote, let sectionId, let projectId):
         Task {
           do {
             let savedNote = try await db.getWriter().write { [newNote] db in
@@ -234,18 +272,25 @@ extension StateStore {
             await MainActor.run {
               _ = self.handleEvent(
                 .projects(
-                  .projectEvent(.UpdateSectionItemText(item: sectionItem, sectionId: sectionId))
+                  .projectEvent(
+                    projectId: projectId,
+                    .UpdateSectionItemText(item: sectionItem, sectionId: sectionId)
+                  )
                 )
               )
             }
           } catch {
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.updateSectionItemText))))
+              _ = self.handleEvent(
+                .projects(
+                  .projectEvent(projectId: projectId, .ProjectError(.updateSectionItemText))
+                )
+              )
             }
           }
         }
 
-      case .SaveSectionItemUpdate(let updatedItem, let sectionId):
+      case .SaveSectionItemUpdate(let updatedItem, let sectionId, let projectId):
         Task {
           do {
             try await db.getWriter().write { db in
@@ -255,19 +300,26 @@ extension StateStore {
             await MainActor.run {
               _ = self.handleEvent(
                 .projects(
-                  .projectEvent(.UpdateSectionItem(item: updatedItem, sectionId: sectionId))
+                  .projectEvent(
+                    projectId: projectId,
+                    .UpdateSectionItem(item: updatedItem, sectionId: sectionId)
+                  )
                 )
               )
             }
           } catch {
             await MainActor.run {
               // TODO: give this its own error type, also used in case above this
-              _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.updateSectionItemText))))
+              _ = self.handleEvent(
+                .projects(
+                  .projectEvent(projectId: projectId, .ProjectError(.updateSectionItemText))
+                )
+              )
             }
           }
         }
 
-      case .deleteSectionItems(let selected, let sectionId):
+      case .deleteSectionItems(let selected, let sectionId, let projectId):
         Task {
           do {
             let deletedIds = try await db.getWriter().write { db in
@@ -283,6 +335,7 @@ extension StateStore {
               _ = self.handleEvent(
                 .projects(
                   .projectEvent(
+                    projectId: projectId,
                     .removeDeletedSectionItems(deletedIds: deletedIds, sectionId: sectionId)
                   )
                 )
@@ -290,7 +343,9 @@ extension StateStore {
             }
           } catch {
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.deleteSectionItems))))
+              _ = self.handleEvent(
+                .projects(.projectEvent(projectId: projectId, .ProjectError(.deleteSectionItems)))
+              )
             }
           }
         }
@@ -307,7 +362,9 @@ extension StateStore {
                 // show a better error if this fails, shouldn't happen though
                 guard let img = UIImage(data: files) else {
                   await MainActor.run {
-                    _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.importImage))))
+                    _ = self.handleEvent(
+                      .projects(.projectEvent(projectId: projectId, .ProjectError(.importImage)))
+                    )
                   }
                   return
                 }
@@ -351,14 +408,20 @@ extension StateStore {
                   if let projectImage = projectImage {
                     await MainActor.run {
                       _ = self.handleEvent(
-                        .projects(.projectEvent(.AddImage(projectImage: projectImage)))
+                        .projects(
+                          .projectEvent(projectId: projectId, .AddImage(projectImage: projectImage))
+                        )
                       )
                     }
                   }
                 }
               case .none:
                 await MainActor.run {
-                  _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.importImage))))
+                  _ = self.handleEvent(
+                    .projects(
+                      .projectEvent(projectId: projectId, .ProjectError(.importImage))
+                    )
+                  )
                 }
             }
           }
@@ -373,11 +436,13 @@ extension StateStore {
               }
             }
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.CompleteImageDeletion)))
+              _ = self.handleEvent(.projects(.projectEvent(projectId: projectId, .DeleteImages)))
             }
           } catch {
             await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(.ProjectError(.deleteImages))))
+              _ = self.handleEvent(
+                .projects(.projectEvent(projectId: projectId, .ProjectError(.deleteImages)))
+              )
             }
           }
         }

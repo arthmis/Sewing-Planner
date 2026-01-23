@@ -30,12 +30,17 @@ struct AddItemView: View {
     let validText = newItem.trimmingCharacters(in: .whitespacesAndNewlines)
     let validNoteText = itemNote.trimmingCharacters(in: .whitespacesAndNewlines)
     let noteText = validNoteText.isEmpty ? nil : validNoteText
-    store.send(
-      event: .projects(
-        .projectEvent(.StoreSectionItem(text: validText, note: noteText, sectionId: sectionId))
-      ),
-      db: db
-    )
+    if let projectId = store.projectsState.selectedProject?.projectData.data.id {
+      store.send(
+        event: .projects(
+          .projectEvent(
+            projectId: projectId,
+            .StoreSectionItem(text: validText, note: noteText, sectionId: sectionId)
+          )
+        ),
+        db: db
+      )
+    }
     showErrorText = false
     isAddingItem = false
     newItem = ""

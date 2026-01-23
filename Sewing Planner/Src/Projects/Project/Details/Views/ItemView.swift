@@ -10,6 +10,7 @@ import SwiftUI
 struct ItemView: View {
   @Binding var data: SectionItem
   @Environment(StateStore.self) var store
+  @Environment(ProjectViewModel.self) var project
   @Environment(\.db) var db
   @State var isEditing = false
   @State var newText = ""
@@ -23,7 +24,10 @@ struct ItemView: View {
   func toggleCompletedState() {
     store.send(
       event: .projects(
-        .projectEvent(.toggleSectionItemCompletionStatus(data.record, sectionId: sectionId))
+        .projectEvent(
+          projectId: project.projectData.data.id,
+          .toggleSectionItemCompletionStatus(data.record, sectionId: sectionId)
+        )
       ),
       db: db
     )

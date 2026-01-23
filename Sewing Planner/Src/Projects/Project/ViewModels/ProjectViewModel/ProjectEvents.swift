@@ -4,11 +4,12 @@ import SwiftUI
 
 enum ProjectEvent {
   case UpdatedProjectTitle(String)
-  case AddSection(projectId: Int64)
-  case AddSectionToState(section: SectionRecord)
-  case UpdateSectionName(section: SectionRecord, oldName: String)
+  case StoreNewSection(projectId: Int64)
+  case AddNewSection(section: SectionRecord)
+  case StoreUpdatedSectionName(section: SectionRecord, oldName: String)
   case markSectionForDeletion(SectionRecord)
   case RemoveSection(Int64)
+  case StoreNewSectionItem(item: SectionItem, sectionId: Int64)
   case StoreSectionItem(text: String, note: String?, sectionId: Int64)
   case StoreUpdatedSectionItemText(item: SectionItem, sectionId: Int64)
   case StoreUpdatedSectionItemTextWithNewNote(
@@ -20,21 +21,20 @@ enum ProjectEvent {
   case toggleSectionItemCompletionStatus(SectionItemRecord, sectionId: Int64)
   case UpdateSectionItem(item: SectionItemRecord, sectionId: Int64)
   case toggleSelectedSectionItem(withId: Int64, fromSectionWithId: Int64)
-  case deleteSelectedTasks(selected: Set<Int64>, sectionId: Int64)
+  case deleteSelectedSectionItemsFromStorage(selected: Set<Int64>, sectionId: Int64)
   case removeDeletedSectionItems(deletedIds: Set<Int64>, sectionId: Int64)
-  case AddSectionItem(item: SectionItem, sectionId: Int64)
   case HandleImagePicker(photoPicker: PhotosPickerItem?)
   case AddImage(projectImage: ProjectImage)
   case ShowDeleteImagesView(initialSelectedImageId: Int64)
+  case DeleteImagesFromStorage
   case DeleteImages
-  case CompleteImageDeletion
   case CancelImageDeletion
   case ToggleImageSelection(imageId: Int64)
   case ProjectError(ProjectError)
 }
 
 enum ProjectsEvent {
-  case projectEvent(ProjectEvent)
+  case projectEvent(projectId: Int64, ProjectEvent)
   case navigation
   case createProject
   case addProjectToState(ProjectMetadata)
@@ -44,8 +44,12 @@ enum ProjectsEvent {
 extension StateStore {
   public func handleProjectsEvent(_ event: ProjectsEvent, state: ProjectsState) -> Effect? {
     switch event {
-      case .projectEvent(let projectEvent):
+      case .projectEvent(let projectId, let projectEvent):
         guard let project = state.selectedProject else {
+          return nil
+        }
+
+        if projectId != project.projectData.data.id {
           return nil
         }
 
@@ -69,7 +73,7 @@ extension StateStore {
         project.projectData.data.name = newTitle
         return Effect.updateProjectTitle(projectData: project.projectData.data)
 
-      case .AddSection(let projectId):
+      case .StoreNewSection(let projectId):
         let now = Date()
         let sectionsCount = project.projectData.sections.count
         let sectionInput = SectionInputRecord(
@@ -78,15 +82,15 @@ extension StateStore {
           createDate: now,
           updateDate: now
         )
-        return .AddNewSection(section: sectionInput)
+        return .StoreNewSection(section: sectionInput)
 
-      case .AddSectionToState(let sectionRecord):
+      case .AddNewSection(let sectionRecord):
         let section = Section(name: sectionRecord)
         project.projectData.sections.append(section)
 
         return nil
 
-      case .UpdateSectionName(let section, let oldName):
+      case .StoreUpdatedSectionName(let section, let oldName):
         if let index = project.projectData.sections.firstIndex(where: {
           $0.section.id == section.id
         }) {
@@ -168,10 +172,11 @@ extension StateStore {
           text: text.trimmingCharacters(in: .whitespacesAndNewlines),
           note: note,
           order: Int64(order),
-          sectionId: sectionId
+          sectionId: sectionId,
+          projectId: project.projectData.data.id
         )
 
-      case .AddSectionItem(let item, let sectionId):
+      case .StoreNewSectionItem(let item, let sectionId):
         guard
           let index = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
@@ -184,14 +189,19 @@ extension StateStore {
         return nil
 
       case .StoreUpdatedSectionItemText(item: let sectionItem, let sectionId):
-        return .SaveSectionItemTextUpdate(item: sectionItem, sectionId: sectionId)
+        return .SaveSectionItemTextUpdate(
+          item: sectionItem,
+          sectionId: sectionId,
+          projectId: project.projectData.data.id
+        )
 
       case .StoreUpdatedSectionItemTextWithNewNote(let item, let newNote, let sectionId):
         let noteRecordInput = SectionItemNoteInputRecord(text: newNote, sectionItemId: item.id)
         return .SaveSectionItemUpdateWithNewNote(
           item: item,
           note: noteRecordInput,
-          sectionId: sectionId
+          sectionId: sectionId,
+          projectId: project.projectData.data.id
         )
 
       case .UpdateSectionItemText(let updatedItem, let sectionId):
@@ -219,7 +229,11 @@ extension StateStore {
 
       case .toggleSectionItemCompletionStatus(var updatedItem, let sectionId):
         updatedItem.isComplete.toggle()
-        return .SaveSectionItemUpdate(updatedItem, sectionId: sectionId)
+        return .SaveSectionItemUpdate(
+          updatedItem,
+          sectionId: sectionId,
+          projectId: project.projectData.data.id
+        )
       case .UpdateSectionItem(let updatedItem, let sectionId):
         guard
           let index = project.projectData.sections.firstIndex(where: { section in
@@ -262,7 +276,7 @@ extension StateStore {
 
         return nil
 
-      case .deleteSelectedTasks(let selectedIds, let sectionId):
+      case .deleteSelectedSectionItemsFromStorage(let selectedIds, let sectionId):
         guard
           let sectionIndex = project.projectData.sections.firstIndex(where: { section in
             section.section.id == sectionId
@@ -278,7 +292,11 @@ extension StateStore {
             selected.append(item)
           }
         }
-        return .deleteSectionItems(selected: selected, sectionId: sectionId)
+        return .deleteSectionItems(
+          selected: selected,
+          sectionId: sectionId,
+          projectId: project.projectData.data.id
+        )
 
       case .removeDeletedSectionItems(let deletedIds, let sectionId):
         guard
@@ -313,7 +331,7 @@ extension StateStore {
 
         return nil
 
-      case .DeleteImages:
+      case .DeleteImagesFromStorage:
         if project.projectImages.selectedImagesIsEmpty {
           return nil
         }
@@ -330,7 +348,7 @@ extension StateStore {
           projectId: project.projectData.data.id
         )
 
-      case .CompleteImageDeletion:
+      case .DeleteImages:
         project.projectImages.cancelDeleteMode()
         project.projectImages.deletedImages.removeAll()
         return nil

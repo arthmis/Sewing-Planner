@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SelectedSectionItemView: View {
   @Environment(StateStore.self) var store
+  @Environment(ProjectViewModel.self) var project
   @Environment(\.db) var db
   @Binding var data: SectionItem
   @State var newText = ""
@@ -19,7 +20,10 @@ struct SelectedSectionItemView: View {
   func toggleCompletedState() {
     store.send(
       event: .projects(
-        .projectEvent(.toggleSectionItemCompletionStatus(data.record, sectionId: sectionId))
+        .projectEvent(
+          projectId: project.projectData.data.id,
+          .toggleSectionItemCompletionStatus(data.record, sectionId: sectionId)
+        )
       ),
       db: db
     )
@@ -50,6 +54,7 @@ struct SelectedSectionItemView: View {
       store.send(
         event: .projects(
           .projectEvent(
+            projectId: project.projectData.data.id,
             .toggleSelectedSectionItem(withId: data.record.id, fromSectionWithId: sectionId)
           )
         ),

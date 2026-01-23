@@ -96,7 +96,7 @@ struct Sewing_PlannerUnitTests {
       updateDate: now
     )
     let event: AppEvent = .projects(
-      .projectEvent(.UpdateSectionName(section: newSectionName, oldName: section.name))
+      .projectEvent(.StoreUpdatedSectionName(section: newSectionName, oldName: section.name))
     )
     let effect = stateStore.handleEvent(event)
 
@@ -198,7 +198,7 @@ struct Sewing_PlannerUnitTests {
     let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
     let event: AppEvent = .projects(
-      .projectEvent(.StoreSectionItem(text: "task 1", note: nil, sectionId: 1))
+      .projectEvent(.StoreNewSectionItem(text: "task 1", note: nil, sectionId: 1))
     )
     let effect = stateStore.handleEvent(event)
 
@@ -221,7 +221,9 @@ struct Sewing_PlannerUnitTests {
       from: SectionItemInputRecord(id: 1, text: "hello", order: 0, sectionId: 1)
     )
     let event: AppEvent = .projects(
-      .projectEvent(.AddSectionItem(item: SectionItem(record: sectionTextRecord), sectionId: 1))
+      .projectEvent(
+        .StoreNewSectionItem(item: SectionItem(record: sectionTextRecord), sectionId: 1)
+      )
     )
     let effect = stateStore.handleEvent(event)
 
@@ -673,7 +675,7 @@ struct Sewing_PlannerUnitTests {
     let model = initializeProjectViewModel(images: projectImages)
     let stateStore = initializeStore(projectsState: ProjectsState(selectedProject: model))
 
-    let event: AppEvent = .projects(.projectEvent(.DeleteImages))
+    let event: AppEvent = .projects(.projectEvent(.DeleteImagesFromStorage))
     let effect = stateStore.handleEvent(event)
     let selectedImage = [
       ProjectImage(

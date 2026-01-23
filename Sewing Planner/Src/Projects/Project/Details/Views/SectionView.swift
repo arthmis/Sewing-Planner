@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SectionView: View {
+  @Environment(ProjectViewModel.self) var project
   @Environment(StateStore.self) var store
   @Binding var model: Section
   let db: AppDatabase
@@ -42,7 +43,11 @@ struct SectionView: View {
         store.send(
           event: .projects(
             .projectEvent(
-              .deleteSelectedTasks(selected: model.selectedItems, sectionId: model.section.id)
+              projectId: project.projectData.data.id,
+              .deleteSelectedSectionItemsFromStorage(
+                selected: model.selectedItems,
+                sectionId: model.section.id
+              )
             )
           ),
           db: db

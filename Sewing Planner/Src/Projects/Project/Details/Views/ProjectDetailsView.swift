@@ -47,7 +47,12 @@ struct ProjectDataView: View {
       Button("Delete", role: .destructive) {
         if let sectionToDelete = projectData.selectedSectionForDeletion {
           store.send(
-            event: .projects(.projectEvent(.markSectionForDeletion(sectionToDelete))),
+            event: .projects(
+              .projectEvent(
+                projectId: projectData.data.id,
+                .markSectionForDeletion(sectionToDelete)
+              )
+            ),
             db: db
           )
         }

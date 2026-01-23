@@ -40,7 +40,10 @@ struct ProjectView: View {
         Button {
           store.send(
             event: .projects(
-              .projectEvent(.AddSection(projectId: project.projectData.data.id))
+              .projectEvent(
+                projectId: project.projectData.data.id,
+                .StoreNewSection(projectId: project.projectData.data.id)
+              )
             ),
             db: db
           )

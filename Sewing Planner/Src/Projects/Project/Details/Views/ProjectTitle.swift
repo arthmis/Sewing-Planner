@@ -29,7 +29,12 @@ struct ProjectTitle: View {
       return
     }
 
-    store.send(event: .projects(.projectEvent(.UpdatedProjectTitle(sanitizedName))), db: db)
+    store.send(
+      event: .projects(
+        .projectEvent(projectId: projectData.id, .UpdatedProjectTitle(sanitizedName))
+      ),
+      db: db
+    )
     isEditing = false
   }
   var body: some View {

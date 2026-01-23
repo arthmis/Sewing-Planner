@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SectionTitleView: View {
   @Environment(StateStore.self) var store
+  @Environment(ProjectViewModel.self) var project
   @Binding var model: Section
   let db: AppDatabase
   @State private var isEditingSectionName = false
@@ -25,7 +26,10 @@ struct SectionTitleView: View {
     section.name = sanitizedName
     store.send(
       event: .projects(
-        .projectEvent(.UpdateSectionName(section: section, oldName: model.section.name))
+        .projectEvent(
+          projectId: project.projectData.data.id,
+          .StoreUpdatedSectionName(section: section, oldName: model.section.name)
+        )
       ),
       db: db
     )

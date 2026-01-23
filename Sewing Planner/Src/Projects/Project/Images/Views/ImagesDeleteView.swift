@@ -3,6 +3,7 @@ import SwiftUI
 struct InlineImagesDeleteDialogView: View {
   @Environment(\.db) private var db
   @Environment(StateStore.self) private var store
+  @Environment(ProjectViewModel.self) private var project
   let deleteDisabled: Bool
 
   @Binding var showDeleteImagesDialog: Bool
@@ -10,7 +11,12 @@ struct InlineImagesDeleteDialogView: View {
   var body: some View {
     HStack(alignment: .center) {
       Button("Cancel") {
-        store.send(event: .projects(.projectEvent(.CancelImageDeletion)), db: db)
+        store.send(
+          event: .projects(
+            .projectEvent(projectId: project.projectData.data.id, .CancelImageDeletion)
+          ),
+          db: db
+        )
       }
       .buttonStyle(SecondaryButtonStyle())
       Spacer()

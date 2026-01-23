@@ -49,6 +49,7 @@ struct ImagesView: View {
                     store.send(
                       event: .projects(
                         .projectEvent(
+                          projectId: model.projectId,
                           .ShowDeleteImagesView(initialSelectedImageId: image.record.id)
                         )
                       ),
@@ -91,7 +92,10 @@ struct ImagesView: View {
         .onChange(of: project.pickerItem) {
           store.send(
             event: .projects(
-              .projectEvent(.HandleImagePicker(photoPicker: project.pickerItem))
+              .projectEvent(
+                projectId: model.projectId,
+                .HandleImagePicker(photoPicker: project.pickerItem)
+              )
             ),
             db: db
           )
@@ -105,7 +109,15 @@ struct ImagesView: View {
       isPresented: $showDeleteImagesDialog
     ) {
       Button("Delete", role: .destructive) {
-        store.send(event: .projects(.projectEvent(.DeleteImages)), db: db)
+        store.send(
+          event: .projects(
+            .projectEvent(
+              projectId: model.projectId,
+              .DeleteImagesFromStorage
+            )
+          ),
+          db: db
+        )
       }
       Button("Cancel", role: .cancel) {
         showDeleteImagesDialog = false

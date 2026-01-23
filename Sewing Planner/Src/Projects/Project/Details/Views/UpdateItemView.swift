@@ -9,6 +9,7 @@ import SwiftUI
 
 struct UpdateItemView: View {
   @Environment(StateStore.self) var store
+  @Environment(ProjectViewModel.self) var project
   @Environment(\.db) var db
   @Binding var data: SectionItem
   @Binding var isEditing: Bool
@@ -38,6 +39,7 @@ struct UpdateItemView: View {
       store.send(
         event: .projects(
           .projectEvent(
+            projectId: project.projectData.data.id,
             .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId)
           )
         ),
@@ -50,6 +52,7 @@ struct UpdateItemView: View {
         store.send(
           event: .projects(
             .projectEvent(
+              projectId: project.projectData.data.id,
               .StoreUpdatedSectionItemTextWithNewNote(
                 item: updatedItem,
                 newNote: note,
@@ -65,6 +68,7 @@ struct UpdateItemView: View {
         store.send(
           event: .projects(
             .projectEvent(
+              projectId: project.projectData.data.id,
               .StoreUpdatedSectionItemText(item: updatedSectionItem, sectionId: sectionId)
             )
           ),
