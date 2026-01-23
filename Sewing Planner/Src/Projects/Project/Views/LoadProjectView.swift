@@ -24,13 +24,11 @@ struct LoadProjectView: View {
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    // clicking anywhere will remove focus from whatever may have focus
-    // mostly using this to remove focus from textfields when you click outside of them
-    // using a frame using all the available space to make it more effective
-    //        .onTapGesture {
-    //            NSApplication.shared.keyWindow?.makeFirstResponder(nil)
-    //        }
     .onAppear {
+      if store.projectsState.selectedProject != nil {
+        return
+      }
+
       do {
         let maybeProjectData = try ProjectData.getProject(
           with: projectId,
