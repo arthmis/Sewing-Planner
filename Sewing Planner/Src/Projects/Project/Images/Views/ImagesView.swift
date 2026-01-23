@@ -70,7 +70,6 @@ struct ImagesView: View {
     }
     .toolbar {
       @Bindable var projectBinding = project
-
       ToolbarItem(placement: .navigation) {
         BackButton {
           dismiss()

@@ -6,6 +6,7 @@ struct LoadProjectView: View {
   @Environment(\.db) private var appDatabase
   @Environment(StateStore.self) private var store
   @Binding var projectsNavigation: [ProjectsNavigation]
+  let projectId: Int64
   let fetchProjects: () -> Void
   // @State var isLoading = true
 
@@ -30,37 +31,28 @@ struct LoadProjectView: View {
     //            NSApplication.shared.keyWindow?.makeFirstResponder(nil)
     //        }
     .onAppear {
-      if case .project(let id) = projectsNavigation.last {
-        do {
-          let maybeProjectData = try ProjectData.getProject(
-            with: id,
-            from: appDatabase
+      do {
+        let maybeProjectData = try ProjectData.getProject(
+          with: projectId,
+          from: appDatabase
+        )
+        if let projectData = maybeProjectData {
+          let projectImages = try ProjectImages.getImages(with: projectId, from: appDatabase)
+
+          store.projectsState.selectedProject = ProjectViewModel(
+            data: projectData,
+            projectsNavigation: projectsNavigation,
+            projectImages: projectImages
           )
-          if let projectData = maybeProjectData {
-
-            let projectImages = try ProjectImages.getImages(with: id, from: appDatabase)
-
-            store.projectsState.selectedProject = ProjectViewModel(
-              data: projectData,
-              projectsNavigation: projectsNavigation,
-              projectImages: projectImages
-            )
-          } else {
-            dismiss()
-            store.appError = .loadProject
-            // TODO: show an error
-          }
-        } catch {
+        } else {
           dismiss()
           store.appError = .loadProject
           // TODO: show an error
         }
-      } else {
+      } catch {
         dismiss()
         store.appError = .loadProject
-        // navigate back to main view and show an error
-        // this basically shouldn't happen because there must be a project in projects navigation at this point, which means
-        // there is an id
+        // TODO: show an error
       }
     }
   }

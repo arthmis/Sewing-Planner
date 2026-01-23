@@ -8,7 +8,6 @@
 import SwiftUI
 
 enum ProjectsNavigation: Hashable {
-  case allProjects
   case project(Int64)
   case projectImages(Int64)
 }
@@ -66,16 +65,10 @@ struct ProjectsView: View {
         }
         .navigationDestination(for: ProjectsNavigation.self) { data in
           switch data {
-            case .allProjects:
-              VStack {
-                LoadProjectView(
-                  projectsNavigation: $storeBinding.projectsState.navigation,
-                  fetchProjects: fetchProjects
-                )
-              }
-            case .project(_):
+            case .project(let projectId):
               LoadProjectView(
                 projectsNavigation: $storeBinding.projectsState.navigation,
+                projectId: projectId,
                 fetchProjects: fetchProjects
               )
             case .projectImages(_):
