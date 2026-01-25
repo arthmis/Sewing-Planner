@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ProjectDataView: View {
+struct ProjectTasksView: View {
   @Environment(StateStore.self) var store
   @Environment(\.db) var db
   @Binding var projectData: ProjectData
@@ -18,25 +18,13 @@ struct ProjectDataView: View {
         EmptyProjectCallToActionView()
         Spacer()
       } else {
-        ScrollView {
-          VStack(alignment: .leading) {
-            HStack {
-              ProjectTitle(
-                projectData: projectData.data,
-                bindedName: projectData.bindedName,
-              )
-              Spacer()
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.bottom, 25)
-            ForEach($projectData.sections, id: \.section.id) {
-              $section in
-              SectionView(model: $section, db: db)
-                .padding(.bottom, 16)
-            }
+        VStack(alignment: .leading) {
+          ForEach($projectData.sections, id: \.section.id) {
+            $section in
+            SectionView(model: $section, db: db)
+              .padding(.bottom, 16)
           }
         }
-        .frame(maxHeight: .infinity)
       }
     }
     .confirmationDialog(

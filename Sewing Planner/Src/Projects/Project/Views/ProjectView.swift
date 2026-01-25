@@ -43,12 +43,10 @@ struct ProjectView: View {
           .fill(.gray.opacity(0.1))
       )
 
-      Text("Inspiration")
-        .font(.system(size: 18, weight: .semibold))
-        .padding(.top, 8)
-
-      HStack {
-        VStack {
+      HStack(alignment: .top, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+          Text("Inspiration")
+            .font(.system(size: 18, weight: .semibold))
           Text(
             "Import photos as references and inspiration."
           )
@@ -64,7 +62,9 @@ struct ProjectView: View {
           Label("Add", systemImage: "photo.badge.plus")
         }
         .buttonStyle(SecondaryButtonStyle())
+        .frame(maxHeight: .infinity, alignment: .center)
       }
+      .padding(.top, 8)
 
     }
     .padding(8)
@@ -78,11 +78,26 @@ struct ProjectView: View {
   }
 
   var body: some View {
-    VStack {
-      ProjectImagesCard
-      ProjectDataView(projectData: $project.projectData)
+    ScrollView {
+      VStack {
+        HStack {
+          ProjectTitle(
+            projectData: project.projectData.data,
+            bindedName: project.projectData.bindedName,
+          )
+          Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, 8)
+
+        ProjectImagesCard
+          .padding(.bottom, 8)
+
+        ProjectTasksView(projectData: $project.projectData)
+      }
+      .padding([.horizontal], 8)
     }
-    .padding([.horizontal], 8)
+    .frame(maxHeight: .infinity)
     .toolbar {
       ToolbarItem(placement: .navigation) {
         BackButton {
