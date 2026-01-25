@@ -29,6 +29,7 @@ struct LoadProjectView: View {
         return
       }
 
+      // TODO make this asynchronous
       do {
         let maybeProjectData = try ProjectData.getProject(
           with: projectId,

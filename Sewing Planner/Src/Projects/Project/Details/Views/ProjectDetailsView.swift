@@ -39,7 +39,6 @@ struct ProjectDataView: View {
         .frame(maxHeight: .infinity)
       }
     }
-    .padding([.leading, .trailing], 8)
     .confirmationDialog(
       "Delete Section",
       isPresented: $projectData.showDeleteSectionDialog

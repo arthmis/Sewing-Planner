@@ -109,8 +109,7 @@ struct AddItemView: View {
         }
       } label: {
         HStack {
-          Image(systemName: "plus")
-          Text("New Item")
+          Label("New Item", systemImage: "plus")
         }
       }
       .buttonStyle(SecondaryButtonStyle())
