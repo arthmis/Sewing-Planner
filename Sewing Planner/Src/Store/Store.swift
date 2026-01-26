@@ -435,8 +435,35 @@ extension StateStore {
                 try image.record.delete(db)
               }
             }
-            await MainActor.run {
-              _ = self.handleEvent(.projects(.projectEvent(projectId: projectId, .DeleteImages)))
+            let effect = await MainActor.run {
+              return self.handleEvent(.projects(.projectEvent(projectId: projectId, .DeleteImages)))
+            }
+
+            if case .RegenerateImagesPreview(let imageRecord, let projectId) = effect {
+              do {
+                guard
+                  let previewImages = try getPreviews(
+                    imageRecord: imageRecord,
+                    projectId: projectId
+                  )
+                else {
+                  // todo then get previews from the source image and if that fails then set the preview to nil and show an error
+                  return
+                }
+                await MainActor.run {
+                  _ = self.handleEvent(
+                    .projects(
+                      .projectEvent(projectId: projectId, .UpdateImagesPreview(previewImages))
+                    )
+                  )
+                }
+              } catch {
+                await MainActor.run {
+                  _ = self.handleEvent(
+                    .projects(.projectEvent(projectId: projectId, .ProjectError(.genericError)))
+                  )
+                }
+              }
             }
           } catch {
             await MainActor.run {
@@ -450,21 +477,12 @@ extension StateStore {
       case .RegenerateImagesPreview(let imageRecord, let projectId):
         Task {
           do {
-            let thumbnailData = try AppFiles().getThumbnailImage(
-              for: imageRecord.thumbnail,
-              fromProject: projectId
-            )
-            guard let thumbnail = thumbnailData else {
-              // todo add logging
+            guard
+              let previewImages = try getPreviews(imageRecord: imageRecord, projectId: projectId)
+            else {
+              // todo then get previews from the source image and if that fails then set the preview to nil and show an error
               return
             }
-
-            let projectImage = ProjectImage(
-              record: imageRecord,
-              path: imageRecord.filePath,
-              image: thumbnail
-            )
-            let previewImages = ProjectImagePreviews(mainImage: projectImage)
             await MainActor.run {
               _ = self.handleEvent(
                 .projects(
@@ -482,6 +500,25 @@ extension StateStore {
         }
     }
   }
+}
+
+func getPreviews(imageRecord: ProjectImageRecord, projectId: Int64) throws -> ProjectImagePreviews?
+{
+  let thumbnailData = try AppFiles().getThumbnailImage(
+    for: imageRecord.thumbnail,
+    fromProject: projectId
+  )
+  guard let thumbnail = thumbnailData else {
+    // todo add logging
+    return nil
+  }
+
+  let projectImage = ProjectImage(
+    record: imageRecord,
+    path: imageRecord.filePath,
+    image: thumbnail
+  )
+  return ProjectImagePreviews(mainImage: projectImage)
 }
 
 extension StateStore {
