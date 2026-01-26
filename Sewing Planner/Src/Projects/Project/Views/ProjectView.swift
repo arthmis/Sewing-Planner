@@ -102,6 +102,7 @@ struct ProjectView: View {
             .aspectRatio(contentMode: .fill)
             .fill()
             .clipped()
+            .contentShape(Rectangle())
         } else {
           Image(systemName: "photo.on.rectangle.angled")
             .font(.system(size: 60))

@@ -324,6 +324,12 @@ extension StateStore {
 
       case .AddImage(let projectImage):
         project.projectImages.images.append(projectImage)
+        if project.projectImages.images.count >= 1 && project.projectImagePreviews == nil {
+          return .GenerateImagesPreview(
+            projectImage.record,
+            projectId: project.projectData.data.id
+          )
+        }
         return nil
 
       case .ShowDeleteImagesView(let initialSelectedImagePath):
@@ -358,7 +364,7 @@ extension StateStore {
           project.projectImagePreviews = nil
           // TODO return an effect to regenerate preview
           if let firstImageRecord = project.projectImages.images.first {
-            return .RegenerateImagesPreview(
+            return .GenerateImagesPreview(
               firstImageRecord.record,
               projectId: project.projectData.data.id
             )

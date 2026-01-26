@@ -406,12 +406,44 @@ extension StateStore {
                     }
                   }
                   if let projectImage = projectImage {
-                    await MainActor.run {
-                      _ = self.handleEvent(
+                    let effect = await MainActor.run {
+                      return self.handleEvent(
                         .projects(
                           .projectEvent(projectId: projectId, .AddImage(projectImage: projectImage))
                         )
                       )
+                    }
+
+                    if case .GenerateImagesPreview(let imageRecord, let projectId) = effect {
+                      do {
+                        guard
+                          let previewImages = try getPreviews(
+                            imageRecord: imageRecord,
+                            projectId: projectId
+                          )
+                        else {
+                          // todo then get previews from the source image and if that fails then set the preview to nil and show an error
+                          return
+                        }
+                        await MainActor.run {
+                          _ = self.handleEvent(
+                            .projects(
+                              .projectEvent(
+                                projectId: projectId,
+                                .UpdateImagesPreview(previewImages)
+                              )
+                            )
+                          )
+                        }
+                      } catch {
+                        await MainActor.run {
+                          _ = self.handleEvent(
+                            .projects(
+                              .projectEvent(projectId: projectId, .ProjectError(.genericError))
+                            )
+                          )
+                        }
+                      }
                     }
                   }
                 }
@@ -439,7 +471,7 @@ extension StateStore {
               return self.handleEvent(.projects(.projectEvent(projectId: projectId, .DeleteImages)))
             }
 
-            if case .RegenerateImagesPreview(let imageRecord, let projectId) = effect {
+            if case .GenerateImagesPreview(let imageRecord, let projectId) = effect {
               do {
                 guard
                   let previewImages = try getPreviews(
@@ -474,7 +506,7 @@ extension StateStore {
           }
         }
 
-      case .RegenerateImagesPreview(let imageRecord, let projectId):
+      case .GenerateImagesPreview(let imageRecord, let projectId):
         Task {
           do {
             guard
