@@ -103,16 +103,32 @@ struct ProjectView: View {
             .fill()
             .clipped()
             .contentShape(Rectangle())
+            .overlay(alignment: .topTrailing) {
+              Button {
+                projectsNavigation.append(.projectImages(project.projectData.data.id))
+              } label: {
+                HStack(alignment: .center) {
+                  Text("VIEW IMAGES")
+                    .font(.system(size: 12, weight: .semibold))
+                  Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                }
+              }
+              .buttonStyle(SecondaryButtonStyle())
+              .padding([.top, .trailing], 12)
+            }
         } else {
           Image(systemName: "photo.on.rectangle.angled")
             .font(.system(size: 60))
             .foregroundStyle(.black.opacity(0.7))
+            .fill()
             .padding(.top, 8)
         }
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
       .layoutPriority(1)
       .onTapGesture {
+        // todo instead of navigating maybe display the preview image, think about it
         projectsNavigation.append(.projectImages(project.projectData.data.id))
       }
       .background(

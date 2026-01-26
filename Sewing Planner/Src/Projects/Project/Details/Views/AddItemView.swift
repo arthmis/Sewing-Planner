@@ -125,7 +125,7 @@ struct SecondaryButtonStyle: ButtonStyle {
     configuration.label
       .padding([.vertical], 8)
       .padding([.horizontal], 8)
-      .background(Color(hex: 0xD9D9D9, opacity: 0.5))
+      .background(Color(hex: 0xE9E9E9, opacity: 1))
       .foregroundColor(.black)
       .clipShape(RoundedRectangle(cornerRadius: 4))
       .scaleEffect(isPressed ? 0.95 : 1)
