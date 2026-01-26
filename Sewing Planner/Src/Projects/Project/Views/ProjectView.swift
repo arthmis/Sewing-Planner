@@ -152,12 +152,28 @@ struct ProjectView: View {
 
         Button {
           project.showPhotoPickerView()
-          projectsNavigation.append(.projectImages(project.projectData.data.id))
         } label: {
           Label("Add", systemImage: "photo.badge.plus")
         }
         .buttonStyle(SecondaryButtonStyle())
         .frame(maxHeight: .infinity, alignment: .center)
+        .photosPicker(
+          isPresented: $project.showPhotoPicker,
+          selection: $project.pickerItem,
+          matching: .images
+        )
+        .onChange(of: project.pickerItem) {
+          store.send(
+            event: .projects(
+              .projectEvent(
+                projectId: project.projectData.data.id,
+                .HandleImagePicker(photoPicker: project.pickerItem)
+              )
+            ),
+            db: db
+          )
+          projectsNavigation.append(.projectImages(project.projectData.data.id))
+        }
       }
       .padding(.top, 8)
 
