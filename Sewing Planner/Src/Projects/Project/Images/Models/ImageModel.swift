@@ -8,7 +8,7 @@
 import GRDB
 import SwiftUI
 
-struct ProjectImageRecord: Identifiable, Codable, EncodableRecord, FetchableRecord,
+struct ProjectImageRecord: Equatable, Identifiable, Codable, EncodableRecord, FetchableRecord,
   MutablePersistableRecord, TableRecord
 {
   var id: Int64

@@ -7,10 +7,7 @@ final class ProjectViewModel {
   var projectData: ProjectData
   var projectsNavigation: [ProjectsNavigation]
   var projectImages: ProjectImages
-  var currentView = CurrentView.details
-  var name = ""
-  var showAddTextboxPopup = false
-  var doesProjectHaveName = false
+  var projectImagePreviews: ProjectImagePreviews?
   var pickerItem: PhotosPickerItem?
   private var photosAppSelectedImage: Data?
   var showPhotoPicker = false
@@ -19,11 +16,13 @@ final class ProjectViewModel {
   init(
     data: ProjectData,
     projectsNavigation: [ProjectsNavigation],
-    projectImages: ProjectImages
+    projectImages: ProjectImages,
+    projectImagePreviews: ProjectImagePreviews? = nil
   ) {
     projectData = data
     self.projectsNavigation = projectsNavigation
     self.projectImages = projectImages
+    self.projectImagePreviews = projectImagePreviews
   }
 
   func showDeleteSectionConfirmationDialog(section: SectionRecord) {
@@ -39,4 +38,8 @@ final class ProjectViewModel {
     showPhotoPicker = true
   }
 
+}
+
+struct ProjectImagePreviews {
+  let mainImage: ProjectImage
 }

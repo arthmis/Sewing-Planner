@@ -28,6 +28,7 @@ enum ProjectEvent {
   case ShowDeleteImagesView(initialSelectedImageId: Int64)
   case DeleteImagesFromStorage
   case DeleteImages
+  case UpdateImagesPreview(ProjectImagePreviews)
   case CancelImageDeletion
   case ToggleImageSelection(imageId: Int64)
   case ProjectError(ProjectError)
@@ -350,6 +351,19 @@ extension StateStore {
 
       case .DeleteImages:
         project.projectImages.cancelDeleteMode()
+        if project.projectImages.deletedImages.firstIndex(where: {
+          $0.record.id == project.projectImagePreviews?.mainImage.record.id
+        }) != nil {
+          project.projectImages.deletedImages.removeAll()
+          project.projectImagePreviews = nil
+          // TODO return an effect to regenerate preview
+          if let firstImageRecord = project.projectImages.images.first {
+            return .RegenerateImagesPreview(
+              firstImageRecord.record,
+              projectId: project.projectData.data.id
+            )
+          }
+        }
         project.projectImages.deletedImages.removeAll()
         return nil
 
@@ -364,6 +378,10 @@ extension StateStore {
           project.projectImages.selectedImages.remove(imageId)
         }
 
+        return nil
+
+      case .UpdateImagesPreview(let preview):
+        project.projectImagePreviews = preview
         return nil
     }
   }

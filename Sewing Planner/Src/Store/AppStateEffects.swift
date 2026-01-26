@@ -26,6 +26,7 @@ enum Effect: Equatable {
   case deleteSectionItems(selected: [SectionItem], sectionId: Int64, projectId: Int64)
   case HandleImagePicker(photoPicker: PhotosPickerItem?, projectId: Int64)
   case DeleteImages([ProjectImage], projectId: Int64)
+  case RegenerateImagesPreview(ProjectImageRecord, projectId: Int64)
   case StoreFabric(FabricRecordInput)
   case retrieveAllFabrics
   case doNothing

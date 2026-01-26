@@ -18,65 +18,6 @@ struct ProjectView: View {
   @Binding var projectsNavigation: [ProjectsNavigation]
   let fetchProjects: () -> Void
 
-  var ProjectImagesCard: some View {
-    VStack(alignment: .leading, spacing: 0) {
-
-      VStack {
-        if project.projectImages.images.isEmpty {
-          Image(systemName: "photo.on.rectangle.angled")
-            .font(.system(size: 60))
-            .foregroundStyle(.black.opacity(0.7))
-            .padding(.top, 8)
-        } else {
-          Image(systemName: "photo")
-            .font(.system(size: 60))
-        }
-        Spacer()
-      }
-      .frame(maxWidth: .infinity, alignment: .center)
-      .onTapGesture {
-        projectsNavigation.append(.projectImages(project.projectData.data.id))
-      }
-      .background(
-        RoundedRectangle(cornerRadius: 0)
-          .stroke(.gray.opacity(0.1), lineWidth: 1)
-          .fill(.gray.opacity(0.1))
-      )
-
-      HStack(alignment: .top, spacing: 0) {
-        VStack(alignment: .leading, spacing: 0) {
-          Text("Inspiration")
-            .font(.system(size: 18, weight: .semibold))
-          Text(
-            "Import photos as references and inspiration."
-          )
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .font(.system(size: 15))
-          .padding(.top, 8)
-        }
-
-        Button {
-          project.showPhotoPickerView()
-          projectsNavigation.append(.projectImages(project.projectData.data.id))
-        } label: {
-          Label("Add", systemImage: "photo.badge.plus")
-        }
-        .buttonStyle(SecondaryButtonStyle())
-        .frame(maxHeight: .infinity, alignment: .center)
-      }
-      .padding(.top, 8)
-
-    }
-    .padding(8)
-    .frame(maxWidth: .infinity, maxHeight: 200)
-    .background(
-      RoundedRectangle(cornerRadius: 8)
-        .stroke(.gray, lineWidth: 1)
-        .fill(.white)
-        .shadow(color: Color.gray.opacity(0.2), radius: 2, y: 5)
-    )
-  }
-
   var body: some View {
     ScrollView {
       VStack {
@@ -149,6 +90,69 @@ struct ProjectView: View {
     //        .onTapGesture {
     //            NSApplication.shared.keyWindow?.makeFirstResponder(nil)
     //        }
+  }
+
+  var ProjectImagesCard: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      Group {
+        if let previews = project.projectImagePreviews {
+          Image(uiImage: previews.mainImage.image!)
+            .resizable()
+            .interpolation(.high)
+            .aspectRatio(contentMode: .fill)
+            .fill()
+            .clipped()
+        } else {
+          Image(systemName: "photo.on.rectangle.angled")
+            .font(.system(size: 60))
+            .foregroundStyle(.black.opacity(0.7))
+            .padding(.top, 8)
+        }
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+      .layoutPriority(1)
+      .onTapGesture {
+        projectsNavigation.append(.projectImages(project.projectData.data.id))
+      }
+      .background(
+        RoundedRectangle(cornerRadius: 0)
+          .stroke(.gray.opacity(0.1), lineWidth: 1)
+          .fill(.gray.opacity(0.1))
+      )
+
+      HStack(alignment: .top, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+          Text("Inspiration")
+            .font(.system(size: 18, weight: .semibold))
+          Text(
+            "Import photos as references and inspiration."
+          )
+          .fixedSize(horizontal: false, vertical: true)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .font(.system(size: 15))
+          .padding(.top, 8)
+        }
+
+        Button {
+          project.showPhotoPickerView()
+          projectsNavigation.append(.projectImages(project.projectData.data.id))
+        } label: {
+          Label("Add", systemImage: "photo.badge.plus")
+        }
+        .buttonStyle(SecondaryButtonStyle())
+        .frame(maxHeight: .infinity, alignment: .center)
+      }
+      .padding(.top, 8)
+
+    }
+    .padding(8)
+    .frame(maxWidth: .infinity, minHeight: 250, maxHeight: 250)
+    .background(
+      RoundedRectangle(cornerRadius: 8)
+        .stroke(.gray, lineWidth: 1)
+        .fill(.white)
+        .shadow(color: Color.gray.opacity(0.2), radius: 2, y: 5)
+    )
   }
 }
 

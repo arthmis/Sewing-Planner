@@ -31,7 +31,7 @@ class ProjectImages {
     self.selectedImages = selectedImages ?? []
   }
 
-  static func getImages(with id: Int64, from db: AppDatabase) throws -> ProjectImages {
+  static func getProjectImageRecords(with id: Int64, from db: AppDatabase) throws -> ProjectImages {
     let records = try db.getProjectImageRecords(projectId: id)
 
     if records.isEmpty {
@@ -120,6 +120,16 @@ class ProjectImages {
       // TODO: decide what I want to do here
     }
 
+    var projectImages = getProjectImages(from: records)
+    projectImages.append(contentsOf: sharedImages)
+
+    await MainActor.run {
+      self.images = projectImages
+    }
+
+  }
+
+  func getProjectImages(from records: [ProjectImageRecord]) -> [ProjectImage] {
     var projectImages: [ProjectImage] = []
     for record in records {
       do {
@@ -145,12 +155,34 @@ class ProjectImages {
         // add error handling but don't exit the function
       }
     }
-    projectImages.append(contentsOf: sharedImages)
 
-    await MainActor.run {
-      self.images = projectImages
+    return projectImages
+  }
+
+  func getProjectImagePreviews() throws -> ProjectImagePreviews? {
+    if self.images.isEmpty {
+      return nil
     }
 
+    let mainRecord = self.images[0].record
+
+    let thumbnailData = try AppFiles().getThumbnailImage(
+      for: mainRecord.thumbnail,
+      fromProject: projectId
+    )
+    guard let thumbnail = thumbnailData else {
+      // todo add logging
+      return nil
+    }
+
+    let projectImage = ProjectImage(
+      record: mainRecord,
+      path: mainRecord.filePath,
+      image: thumbnail
+    )
+
+    let previewImages = ProjectImagePreviews(mainImage: projectImage)
+    return previewImages
   }
 
   private func loadSharedImages(db: AppDatabase) throws -> [ProjectImage] {

@@ -36,12 +36,18 @@ struct LoadProjectView: View {
           from: appDatabase
         )
         if let projectData = maybeProjectData {
-          let projectImages = try ProjectImages.getImages(with: projectId, from: appDatabase)
+          let projectImages = try ProjectImages.getProjectImageRecords(
+            with: projectId,
+            from: appDatabase
+          )
+
+          let imagePreviews = try projectImages.getProjectImagePreviews()
 
           store.projectsState.selectedProject = ProjectViewModel(
             data: projectData,
             projectsNavigation: projectsNavigation,
-            projectImages: projectImages
+            projectImages: projectImages,
+            projectImagePreviews: imagePreviews
           )
         } else {
           dismiss()

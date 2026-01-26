@@ -446,6 +446,40 @@ extension StateStore {
             }
           }
         }
+
+      case .RegenerateImagesPreview(let imageRecord, let projectId):
+        Task {
+          do {
+            let thumbnailData = try AppFiles().getThumbnailImage(
+              for: imageRecord.thumbnail,
+              fromProject: projectId
+            )
+            guard let thumbnail = thumbnailData else {
+              // todo add logging
+              return
+            }
+
+            let projectImage = ProjectImage(
+              record: imageRecord,
+              path: imageRecord.filePath,
+              image: thumbnail
+            )
+            let previewImages = ProjectImagePreviews(mainImage: projectImage)
+            await MainActor.run {
+              _ = self.handleEvent(
+                .projects(
+                  .projectEvent(projectId: projectId, .UpdateImagesPreview(previewImages))
+                )
+              )
+            }
+          } catch {
+            await MainActor.run {
+              _ = self.handleEvent(
+                .projects(.projectEvent(projectId: projectId, .ProjectError(.genericError)))
+              )
+            }
+          }
+        }
     }
   }
 }
