@@ -29,8 +29,11 @@ struct FillLayout: Layout {
     precondition(subviews.count == 1)
     // Place each subview to fill the entire bounds
     for subview in subviews {
+      let subviewSize = subview.sizeThatFits(ProposedViewSize(bounds.size))
+      let x = bounds.midX - subviewSize.width / 2
+      let y = bounds.midY - subviewSize.height / 2
       subview.place(
-        at: bounds.origin,
+        at: CGPoint(x: x, y: y),
         proposal: ProposedViewSize(bounds.size)
       )
     }
