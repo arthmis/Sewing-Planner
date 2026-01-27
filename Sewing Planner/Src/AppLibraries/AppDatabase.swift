@@ -167,7 +167,7 @@ extension AppDatabase {
     }
   }
 
-  func getSections(projectId: Int64) throws -> [Section] {
+  func getSections(projectId: Int64) throws -> [ProjectSection] {
     return try dbWriter.read { db in
       let sectionRecords: [SectionRecord] =
         try SectionRecord
@@ -181,7 +181,7 @@ extension AppDatabase {
           from: db
         )
         return
-          Section(
+          ProjectSection(
             section: sectionRecord,
             items: sectionItems,
           )

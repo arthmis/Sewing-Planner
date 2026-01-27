@@ -10,7 +10,7 @@ import SwiftUI
 struct SectionView: View {
   @Environment(ProjectViewModel.self) var project
   @Environment(StateStore.self) var store
-  @Binding var model: Section
+  @Binding var model: ProjectSection
   let db: AppDatabase
   @State private var showDeleteItemsDialog = false
 

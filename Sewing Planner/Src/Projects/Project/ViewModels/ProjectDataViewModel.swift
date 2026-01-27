@@ -13,7 +13,7 @@ import SwiftUI
 @Observable
 final class ProjectData {
   var data: ProjectMetadata
-  var sections: [Section] = .init()
+  var sections: [ProjectSection] = .init()
   var bindedName = ""
   var selectedSectionForDeletion: SectionRecord?
   var showDeleteSectionDialog = false
@@ -22,7 +22,7 @@ final class ProjectData {
     self.data = data
   }
 
-  init(data: ProjectMetadata, projectSections: [Section]) {
+  init(data: ProjectMetadata, projectSections: [ProjectSection]) {
     self.data = data
     sections = projectSections
   }
@@ -38,7 +38,7 @@ final class ProjectData {
       )
       try sectionInput.save(db)
       let sectionRecord = SectionRecord(from: sectionInput)
-      let section = Section(name: sectionRecord)
+      let section = ProjectSection(name: sectionRecord)
       sections.append(section)
     }
   }

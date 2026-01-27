@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SectionItemsListView: View {
-  @Binding var model: Section
+  @Binding var model: ProjectSection
   let db: AppDatabase
 
   var body: some View {

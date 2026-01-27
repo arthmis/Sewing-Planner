@@ -3,7 +3,7 @@ import SwiftUI
 struct SectionTitleView: View {
   @Environment(StateStore.self) var store
   @Environment(ProjectViewModel.self) var project
-  @Binding var model: Section
+  @Binding var model: ProjectSection
   let db: AppDatabase
   @State private var isEditingSectionName = false
   @State private var bindedName: String = ""

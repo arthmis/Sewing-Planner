@@ -86,7 +86,7 @@ extension StateStore {
         return .StoreNewSection(section: sectionInput)
 
       case .AddNewSection(let sectionRecord):
-        let section = Section(name: sectionRecord)
+        let section = ProjectSection(name: sectionRecord)
         project.projectData.sections.append(section)
 
         return nil

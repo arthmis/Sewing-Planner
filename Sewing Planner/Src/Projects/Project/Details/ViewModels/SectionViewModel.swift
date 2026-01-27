@@ -13,7 +13,7 @@ enum FocusField {
 }
 
 @Observable
-class Section {
+class ProjectSection {
   var section: SectionRecord
   var items: [SectionItem] = []
   var deletedItems: [SectionItemRecord] = []

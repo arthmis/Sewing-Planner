@@ -20,7 +20,7 @@ struct Sewing_PlannerUnitTests {
 
   }
   @MainActor private func initializeProjectViewModel(
-    sections: [Section]? = nil,
+    sections: [ProjectSection]? = nil,
     images: ProjectImages? = nil,
     projectId: Int64? = nil
   ) -> ProjectViewModel {
@@ -28,7 +28,7 @@ struct Sewing_PlannerUnitTests {
     let now = Date()
     let sections =
       sections ?? [
-        Section(
+        ProjectSection(
           name: SectionRecord(
             id: 1,
             projectId: projectId,
@@ -81,7 +81,7 @@ struct Sewing_PlannerUnitTests {
       updateDate: now
     )
     let sections = [
-      Section(
+      ProjectSection(
         section: section,
         items: [],
 
@@ -175,7 +175,7 @@ struct Sewing_PlannerUnitTests {
   @MainActor func testRemoveSection() {
     let now = Date.now
     let sections = [
-      Section(
+      ProjectSection(
         name: SectionRecord(
           id: 1,
           projectId: 1,
@@ -276,7 +276,7 @@ struct Sewing_PlannerUnitTests {
     )
     let sectionItem = SectionItem(record: sectionTextRecord)
     let sections = [
-      Section(
+      ProjectSection(
         section: SectionRecord(
           id: 1,
           projectId: 1,
@@ -318,7 +318,7 @@ struct Sewing_PlannerUnitTests {
     )
     let sectionItem = SectionItem(record: sectionTextRecord)
     let sections = [
-      Section(
+      ProjectSection(
         section: SectionRecord(
           id: 1,
           projectId: 1,
@@ -364,7 +364,7 @@ struct Sewing_PlannerUnitTests {
     )
     let sectionItem = SectionItem(record: sectionTextRecord)
     let sections = [
-      Section(
+      ProjectSection(
         section: SectionRecord(
           id: 1,
           projectId: 1,
@@ -401,7 +401,7 @@ struct Sewing_PlannerUnitTests {
   @MainActor func testToggleItemSelectionForDeletion() {
     let now = Date.now
     let sections = [
-      Section(
+      ProjectSection(
         section: SectionRecord(
           id: 1,
           projectId: 1,
@@ -449,7 +449,7 @@ struct Sewing_PlannerUnitTests {
   @MainActor func testRemoveDeletedSectionItems() {
     let now = Date.now
     let sections = [
-      Section(
+      ProjectSection(
         section: SectionRecord(
           id: 1,
           projectId: 1,
@@ -476,7 +476,7 @@ struct Sewing_PlannerUnitTests {
           ),
         ],
       ),
-      Section(
+      ProjectSection(
         section: SectionRecord(
           id: 2,
           projectId: 1,
