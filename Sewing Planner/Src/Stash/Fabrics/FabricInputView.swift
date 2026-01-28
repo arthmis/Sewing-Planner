@@ -87,11 +87,12 @@ struct FabricInputView: View {
   }
 
   var selectFibersView: some View {
-    VStack(alignment: .leading) {
+    VStack(alignment: .leading, spacing: 0) {
       if !fiberTextFieldFocus {
         Group {
           Text("Selected fibers:")
             .font(.subheadline)
+            .padding(.bottom, 2)
           WrappingHStack(horizontalSpacing: 4) {
             ForEach($selectedFibers, id: \.self) { fiber in
               Button {
@@ -105,14 +106,32 @@ struct FabricInputView: View {
               .buttonStyle(.bordered)
             }
           }
-          .padding(.vertical, 8)
+          .padding(.bottom, 8)
         }
         .transition(.revealFrom(edge: .top))
+      } else {
+        WrappingHStack(horizontalSpacing: 4) {
+          ForEach($selectedFibers, id: \.self) { fiber in
+            Button {
+              selectedFibers = selectedFibers.filter({ $0 != fiber.wrappedValue })
+            } label: {
+              HStack {
+                Text(fiber.wrappedValue.displayName)
+                  .font(.caption)
+                Image(systemName: "xmark")
+                  .font(.caption)
+              }
+            }
+            .buttonStyle(.bordered)
+          }
+        }
+        .padding(.bottom, 4)
+        .transition(.revealFrom(edge: .bottom))
       }
+
       HStack {
         TextField("Fibers", text: $fibersTextInput, prompt: Text("Fiber Content"))
           .focused($fiberTextFieldFocus)
-          .textFieldStyle(.roundedBorder)
           .onSubmit {
             withAnimation {
               if let first = searchResults.first {
@@ -128,6 +147,7 @@ struct FabricInputView: View {
             searchResults.append(FiberType.knownTypes.randomElement()!)
             searchResults.append(FiberType.knownTypes.randomElement()!)
           }
+          .padding(.leading, 8)
         Button {
           fiberTextFieldFocus = false
           fibersTextInput = ""
@@ -135,7 +155,15 @@ struct FabricInputView: View {
           Label("Close", systemImage: "xmark")
             .labelStyle(.iconOnly)
         }
+        .padding(.horizontal, 8)
       }
+      .padding(.vertical, 4)
+      .background(.white)
+      .overlay {
+        RoundedRectangle(cornerRadius: 4)
+          .stroke(.gray, lineWidth: 1)
+      }
+      .padding(.bottom, 4)
       List($searchResults, id: \.self) { result in
         let containsResult = selectedFibers.contains(where: { $0 == result.wrappedValue })
         let backgroundColor = containsResult ? Color.blue : Color.clear
@@ -157,7 +185,7 @@ struct FabricInputView: View {
       .listStyle(.inset)
       Spacer()
     }
-    .padding(8)
+    .padding(.horizontal, 8)
     .background(Color.gray.opacity(0.1))
     .animation(.easeOut(duration: 0.15), value: fiberTextFieldFocus)
   }
