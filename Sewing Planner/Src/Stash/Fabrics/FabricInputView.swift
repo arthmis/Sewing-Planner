@@ -139,8 +139,8 @@ struct FabricInputView: View {
               }
             }
           }
-          .debouncedTextField(observedValue: $fibersTextInput) { searchText in
-            print(searchText)
+          .debounce(observedValue: fibersTextInput) {
+            print(fibersTextInput)
             searchResults.removeAll()
             searchResults.append(FiberType.knownTypes.randomElement()!)
             searchResults.append(FiberType.knownTypes.randomElement()!)
