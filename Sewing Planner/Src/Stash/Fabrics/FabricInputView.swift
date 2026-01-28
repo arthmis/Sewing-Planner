@@ -12,12 +12,14 @@ struct FabricInputView: View {
   @State var color = ""
   @State var fibersTextInput = ""
   @State var selectedFibers: [FiberType] = [.abaca, .bamboo, .cashmere]
+  @State var searchResults: [FiberType] = []
   @State var pattern = ""
   @State var stretch = ""
   @State var imageSelection: PhotosPickerItem? = nil
   @State var store = ""
   @State var link = ""
   @State var price = ""
+  @FocusState var fiberTextFieldFocus: Bool
 
   var addButtonDisabled: Bool {
     name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -65,7 +67,6 @@ struct FabricInputView: View {
                 }
               }
             }
-            // TextField("Fibers", text: $fibersTextInput, prompt: Text("Fiber Content"))
           }
           TextField("Pattern", text: $pattern, prompt: Text("Pattern"))
           TextField("Stretch", text: $stretch, prompt: Text("Stretch"))
@@ -87,27 +88,63 @@ struct FabricInputView: View {
 
   var selectFibersView: some View {
     VStack(alignment: .leading) {
-      Text("Selected fibers:")
-        .font(.subheadline)
-      WrappingHStack(horizontalSpacing: 4) {
-        ForEach($selectedFibers, id: \.self) { fiber in
-          Button {
-            selectedFibers = selectedFibers.filter({ $0 != fiber.wrappedValue })
-          } label: {
-            HStack {
-              Text(fiber.wrappedValue.displayName)
-              Image(systemName: "xmark")
+      if !fiberTextFieldFocus {
+        Group {
+          Text("Selected fibers:")
+            .font(.subheadline)
+          WrappingHStack(horizontalSpacing: 4) {
+            ForEach($selectedFibers, id: \.self) { fiber in
+              Button {
+                selectedFibers = selectedFibers.filter({ $0 != fiber.wrappedValue })
+              } label: {
+                HStack {
+                  Text(fiber.wrappedValue.displayName)
+                  Image(systemName: "xmark")
+                }
+              }
+              .buttonStyle(.bordered)
             }
           }
-          .buttonStyle(.bordered)
+          .padding(.vertical, 8)
+        }
+        .transition(.move(edge: .top))
+      }
+      HStack {
+
+        TextField("Fibers", text: $fibersTextInput, prompt: Text("Fiber Content"))
+          .focused($fiberTextFieldFocus)
+          .textFieldStyle(.roundedBorder)
+          .onSubmit {
+            withAnimation {
+              if let first = searchResults.first {
+                selectedFibers.append(first)
+              }
+            }
+          }
+          .debouncedTextField(observedValue: $fibersTextInput) { searchText in
+            print(searchText)
+            searchResults.removeAll()
+            searchResults.append(FiberType.knownTypes.randomElement()!)
+            searchResults.append(FiberType.knownTypes.randomElement()!)
+            searchResults.append(FiberType.knownTypes.randomElement()!)
+            searchResults.append(FiberType.knownTypes.randomElement()!)
+          }
+        Button {
+          fiberTextFieldFocus = false
+          fibersTextInput = ""
+        } label: {
+          Label("Close", systemImage: "xmark")
+            .labelStyle(.iconOnly)
         }
       }
-      .padding(.vertical, 8)
-      TextField("Fibers", text: $fibersTextInput, prompt: Text("Fiber Content"))
+      List($searchResults, id: \.self) { result in
+        Text(result.wrappedValue.displayName)
+      }
       Spacer()
     }
     .padding(8)
     .background(Color.gray.opacity(0.1))
+    .animation(.easeOut(duration: 0.15), value: fiberTextFieldFocus)
   }
 
   var addFabricButton: some View {
