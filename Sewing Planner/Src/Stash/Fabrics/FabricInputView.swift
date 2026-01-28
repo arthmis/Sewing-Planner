@@ -107,7 +107,7 @@ struct FabricInputView: View {
           }
           .padding(.vertical, 8)
         }
-        .transition(.move(edge: .top))
+        .transition(.revealFrom(edge: .top))
       }
       HStack {
 
