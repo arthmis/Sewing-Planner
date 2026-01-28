@@ -4,7 +4,7 @@ struct FabricsView: View {
   @Environment(\.db) private var db
   @Environment(\.settings) var settings
   @Environment(StateStore.self) var stateStore
-  @State var showAddFabricDialog = false
+  @State var showAddFabricDialog = true
 
   func handleDismiss() {
     print("dismis")

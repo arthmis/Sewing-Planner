@@ -6,7 +6,7 @@ class StateStore {
   var projectsState: ProjectsState
   var stashState: StashState
   var appError: AppError?
-  var appSection: AppSection = .projects
+  var appSection: AppSection = .stash
 
   init(projectsState: ProjectsState? = nil) {
     self.projectsState = projectsState ?? ProjectsState()
@@ -48,7 +48,7 @@ extension StateStore {
             }
 
             await MainActor.run {
-              _ = self.handleEvent(.fabrics(.addFabricToState(fabricRecord)))
+              _ = self.handleEvent(.fabrics(.addFabric(fabricRecord)))
             }
           } catch {
             print(error)

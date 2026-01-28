@@ -98,7 +98,7 @@ struct WrappingHStack: Layout {
     sizes: [CGSize],
     maxWidth: CGFloat
   ) -> [CGPoint] {
-    guard !positions.isEmpty else { return positions }
+    if positions.isEmpty { return positions }
 
     var alignedPositions = positions
 
@@ -151,28 +151,11 @@ struct WrappingHStack: Layout {
 
 #Preview("WrappingHStack Demo") {
   VStack(alignment: .leading, spacing: 20) {
-    Text("Text Items:")
-      .font(.headline)
-
-    WrappingHStack(horizontalSpacing: 8, verticalSpacing: 8) {
-      Text("Cotton")
-      Text("Polyester")
-      Text("Silk")
-      Text("Wool")
-      Text("Linen")
-      Text("Cashmere")
-      Text("Bamboo")
-      Text("Hemp")
-    }
-    .padding()
-    .background(Color.gray.opacity(0.1))
-    .cornerRadius(8)
-
     Text("Button Items:")
-      .font(.headline)
+      .font(.subheadline)
 
     WrappingHStack(horizontalSpacing: 8, verticalSpacing: 8) {
-      ForEach(["Abaca", "Bamboo", "Cashmere", "Denim", "Elastane", "Fleece"], id: \.self) { fiber in
+      ForEach(["Abaca", "Bamboo", "Cashmere", "Denim", "Elastane", "this is really long text", "Fleece"], id: \.self) { fiber in
         Button {
           print("Selected: \(fiber)")
         } label: {

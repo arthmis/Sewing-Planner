@@ -7,7 +7,17 @@ struct FabricInputView: View {
   @Environment(\.db) private var db
   @State var name = ""
   @State var length = ""
+  @State var width = ""
+  @State var description = ""
+  @State var color = ""
+  @State var fibersTextInput = ""
+  @State var selectedFibers: [FiberType] = [.abaca, .bamboo, .cashmere]
+  @State var pattern = ""
+  @State var stretch = ""
   @State var imageSelection: PhotosPickerItem? = nil
+  @State var store = ""
+  @State var link = ""
+  @State var price = ""
 
   var addButtonDisabled: Bool {
     name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -16,28 +26,88 @@ struct FabricInputView: View {
 
   var body: some View {
     NavigationStack {
-      VStack {
-        Button {
-          print("show picker view")
-        } label: {
-          Label("Add Image", systemImage: "folder.badge.plus")
+      Form {
+        Section(header: Text("Photos")) {
+          Button {
+            print("show picker view")
+          } label: {
+            Label("Add Image", systemImage: "folder.badge.plus")
+          }
+
         }
-        Form {
-          TextField(text: $name, prompt: Text("Name")) {
-            Text("Fabric Name")
+        Section(header: Text("Details")) {
+          TextField("Name", text: $name, prompt: Text("Name"))
+          TextField("Length", text: $length)
+            .keyboardType(.decimalPad)
+          TextField("Width", text: $width)
+            .keyboardType(.decimalPad)
+          TextField("Description", text: $description)
+        }
+
+        Section(header: Text("Composition")) {
+          TextField("Color", text: $color, prompt: Text("Color"))
+          NavigationLink(destination: selectFibersView) {
+            VStack(alignment: .leading) {
+              Text("Fiber Content")
+                .foregroundStyle(.placeholder)
+                .font(.subheadline)
+              WrappingHStack {
+                ForEach($selectedFibers, id: \.self) { fiber in
+                  Button {
+                    selectedFibers = selectedFibers.filter({ $0 != fiber.wrappedValue })
+                  } label: {
+                    HStack {
+                      Text(fiber.wrappedValue.displayName)
+                      Image(systemName: "xmark")
+                    }
+                  }
+                  .buttonStyle(.bordered)
+                }
+              }
+            }
+            // TextField("Fibers", text: $fibersTextInput, prompt: Text("Fiber Content"))
           }
-          TextField(text: $length, prompt: Text("Length")) {
-            Text("Length")
-          }
-          .keyboardType(.decimalPad)
+          TextField("Pattern", text: $pattern, prompt: Text("Pattern"))
+          TextField("Stretch", text: $stretch, prompt: Text("Stretch"))
+        }
+
+        Section(header: Text("Purchase Information")) {
+          TextField("Store", text: $store)
+          TextField("Link", text: $link)
+          TextField("Price", text: $price)
+          // TextField("Purchase Date", text: $purchaseDate)
         }
       }
-      .frame(maxWidth: .infinity)
       .navigationTitle("New Fabric")
       .navigationBarTitleDisplayMode(.inline)
       .navigationBarItems(leading: cancelAddFabricButton)
       .navigationBarItems(trailing: addFabricButton)
     }
+  }
+
+  var selectFibersView: some View {
+    VStack(alignment: .leading) {
+      Text("Selected fibers:")
+        .font(.subheadline)
+      WrappingHStack(horizontalSpacing: 4) {
+        ForEach($selectedFibers, id: \.self) { fiber in
+          Button {
+            selectedFibers = selectedFibers.filter({ $0 != fiber.wrappedValue })
+          } label: {
+            HStack {
+              Text(fiber.wrappedValue.displayName)
+              Image(systemName: "xmark")
+            }
+          }
+          .buttonStyle(.bordered)
+        }
+      }
+      .padding(.vertical, 8)
+      TextField("Fibers", text: $fibersTextInput, prompt: Text("Fiber Content"))
+      Spacer()
+    }
+    .padding(8)
+    .background(Color.gray.opacity(0.1))
   }
 
   var addFabricButton: some View {
