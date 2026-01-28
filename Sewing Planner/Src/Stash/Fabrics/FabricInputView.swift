@@ -12,7 +12,7 @@ struct FabricInputView: View {
   @State var color = ""
   @State var fibersTextInput = ""
   @State var selectedFibers: [FiberType] = [.abaca, .bamboo, .cashmere]
-  @State var searchResults: [FiberType] = []
+  @State var searchResults: [FiberType] = FiberType.knownTypes
   @State var pattern = ""
   @State var stretch = ""
   @State var imageSelection: PhotosPickerItem? = nil
@@ -110,7 +110,6 @@ struct FabricInputView: View {
         .transition(.revealFrom(edge: .top))
       }
       HStack {
-
         TextField("Fibers", text: $fibersTextInput, prompt: Text("Fiber Content"))
           .focused($fiberTextFieldFocus)
           .textFieldStyle(.roundedBorder)
@@ -138,8 +137,24 @@ struct FabricInputView: View {
         }
       }
       List($searchResults, id: \.self) { result in
-        Text(result.wrappedValue.displayName)
+        let containsResult = selectedFibers.contains(where: { $0 == result.wrappedValue })
+        let backgroundColor = containsResult ? Color.blue : Color.clear
+        let textColor = containsResult ? Color.white : Color.black
+        Button(result.wrappedValue.displayName) {
+          if containsResult {
+            selectedFibers = selectedFibers.filter({ $0 != result.wrappedValue })
+          } else {
+            selectedFibers.append(result.wrappedValue)
+            fiberTextFieldFocus = false
+          }
+        }
+        .foregroundStyle(textColor)
+        .listRowBackground(
+          RoundedRectangle(cornerRadius: 8)
+            .foregroundStyle(backgroundColor)
+        )
       }
+      .listStyle(.inset)
       Spacer()
     }
     .padding(8)
@@ -191,5 +206,8 @@ enum FabricInputError: Error {
 }
 
 #Preview {
-  FabricInputView()
+  // FabricInputView()
+  VStack {
+    FabricInputView().selectFibersView
+  }
 }
